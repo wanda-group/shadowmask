@@ -1,0 +1,862 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "WebApi",
+    "description": "apis for webUI",
+    "version": "1.0.0"
+  },
+  "host": "127.0.0.1",
+  "schemes": [
+    "https"
+  ],
+  "basePath": "/",
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/admin/login": {
+      "post": {
+        "summary": "Adminstrator login api",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "formData",
+            "description": "Adminstrator username",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "in": "formData",
+            "type": "string",
+            "description": "password for Adminstrator",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return log result",
+            "schema": {
+              "$ref": "#/definitions/LoginResult"
+            }
+          }
+        }
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "summary": "get all users.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/UserResult"
+            }
+          }
+        }
+      }
+    },
+    "/admin/grant": {
+      "post": {
+        "summary": "grant priviledges.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "source",
+            "in": "formData",
+            "description": "HIVE,SPARK, etc. ; joined by \"#\"",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "datasetType",
+            "in": "formData",
+            "description": "VIEW,TABLE,etc",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "schema",
+            "in": "formData",
+            "description": "the schema witch the dataset belongs to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "formData",
+            "description": "name of dataset",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/SimpleResult"
+            }
+          }
+        }
+      }
+    },
+    "/data/schema": {
+      "get": {
+        "summary": "Adminstrator login api",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "hive,spark,etc",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return the schema data",
+            "schema": {
+              "$ref": "#/definitions/SchemaResult"
+            }
+          }
+        }
+      }
+    },
+    "/data/table": {
+      "get": {
+        "summary": "get n-first record of a table",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "HIVE,SPARK, etc.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "datasetType",
+            "in": "query",
+            "description": "VIEW,TABLE,etc",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "schema",
+            "in": "query",
+            "description": "the schema witch the dataset belongs to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "name of dataset",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "how many rows will get",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/TableResult"
+            }
+          }
+        }
+      }
+    },
+    "/data/columnTypes": {
+      "get": {
+        "summary": "get all cloumn types",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/CloumnTypeResult"
+            }
+          }
+        }
+      }
+    },
+    "/data/task": {
+      "get": {
+        "summary": "fetch all task in some state .",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "taskType",
+            "in": "query",
+            "description": "0-submited,1-finished,2-failed",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fetchType",
+            "in": "query",
+            "description": "0-all,1-paging",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageNum",
+            "in": "query",
+            "description": "index of page , 0-based ,default to 0",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "size of the page",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/TaskResult"
+            }
+          }
+        }
+      }
+    },
+    "/warehouse/dataset/delete": {
+      "post": {
+        "summary": "delete an table",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "source",
+            "in": "formData",
+            "description": "HIVE,SPARK, etc.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "datasetType",
+            "in": "formData",
+            "description": "VIEW,TABLE,etc",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "schema",
+            "in": "formData",
+            "description": "the schema witch the dataset belongs to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "formData",
+            "description": "name of dataset",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/SimpleResult"
+            }
+          }
+        }
+      }
+    },
+    "/warehouse/maskRules": {
+      "get": {
+        "summary": "fetch all mask rules supported .",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/MaskRulesResult"
+            }
+          }
+        }
+      }
+    },
+    "/warehouse/mask": {
+      "post": {
+        "summary": "fetch all mask rules supported .",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "maskRule",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MaskRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/SimpleResult"
+            }
+          }
+        }
+      }
+    },
+    "/warehouse/privacyRisk": {
+      "get": {
+        "summary": "fetch all mask rules supported .",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "auth token",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "description": "HIVE,SPARK, etc.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "datasetType",
+            "in": "query",
+            "description": "VIEW,TABLE,etc",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "schema",
+            "in": "query",
+            "description": "the schema witch the dataset belongs to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "name of dataset",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "return fetch results .",
+            "schema": {
+              "$ref": "#/definitions/PriRiskResult"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "SimpleResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        }
+      }
+    },
+    "LoginResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/LoginResultData"
+        }
+      }
+    },
+    "LoginResultData": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "UserResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserItem"
+          }
+        }
+      }
+    },
+    "UserItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        }
+      }
+    },
+    "SchemaResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SchemaObjectParent"
+          }
+        }
+      }
+    },
+    "SchemaObjectParent": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "schemas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SchemaObject"
+          }
+        }
+      }
+    },
+    "SchemaObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "showName": {
+          "type": "string"
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TableProp"
+          }
+        }
+      }
+    },
+    "TableProp": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "showName": {
+          "type": "string"
+        }
+      }
+    },
+    "TableResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/TableContent"
+        }
+      }
+    },
+    "TableContent": {
+      "type": "object",
+      "properties": {
+        "titles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TableTitle"
+          }
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "TableTitle": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "showName": {
+          "type": "string"
+        },
+        "cloumnType": {
+          "type": "string",
+          "description": "ID,HALF_ID,SENSITIVE,NONE_SENSITIVE,UNKNOWN"
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "CloumnTypeResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CloumnType"
+          }
+        }
+      }
+    },
+    "CloumnType": {
+      "type": "object",
+      "properties": {
+        "colType": {
+          "type": "string",
+          "description": "ID,HALF_ID,SENSITIVE, NONE_SENSITIVE,UNKNOWN"
+        },
+        "colDesc": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "TaskResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "totalNum": {
+              "type": "integer"
+            },
+            "tasks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TaskViewObject"
+              }
+            }
+          }
+        }
+      }
+    },
+    "TaskViewObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "name of the task"
+        },
+        "submitedTime": {
+          "type": "string"
+        },
+        "finishedTime": {
+          "type": "string"
+        },
+        "exceptedTime": {
+          "type": "string"
+        }
+      }
+    },
+    "MaskRulesResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MaskType"
+          }
+        }
+      }
+    },
+    "MaskType": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MaskRule"
+          }
+        }
+      }
+    },
+    "MaskRule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MaskRuleParam"
+          }
+        }
+      }
+    },
+    "MaskRuleParam": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "dataType": {
+          "type": "string",
+          "description": "will be integer,string, boolean  etc"
+        }
+      }
+    },
+    "MaskRequest": {
+      "type": "object",
+      "properties": {
+        "dsSource": {
+          "type": "string",
+          "description": "HIVE,SPARK,etc"
+        },
+        "dsType": {
+          "type": "string",
+          "description": "TABLE,VIEW etc"
+        },
+        "dsSchema": {
+          "type": "string"
+        },
+        "dsTable": {
+          "type": "string"
+        },
+        "distSource": {
+          "type": "string",
+          "description": "HIVE,SPARK,etc"
+        },
+        "distType": {
+          "type": "string",
+          "description": "TABLE,VIEW etc"
+        },
+        "distSchema": {
+          "type": "string"
+        },
+        "distName": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ColRule"
+          }
+        }
+      }
+    },
+    "ColRule": {
+      "type": "object",
+      "properties": {
+        "colName": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "object",
+          "properties": {
+            "maskTypeID": {
+              "type": "string"
+            },
+            "maskRuleID": {
+              "type": "string"
+            },
+            "maskParams": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "paramName": {
+                    "type": "string"
+                  },
+                  "paramValue": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "PriRiskResult": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RiskItems"
+          }
+        }
+      }
+    },
+    "RiskItems": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

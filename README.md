@@ -1,2 +1,2 @@
 # shadowmask
-ShadowMask is a platform to analyze sensitive big data.
+Shadowmask is an open source project for data anonymation of big data.
