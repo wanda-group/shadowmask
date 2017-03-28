@@ -20,46 +20,27 @@ package org.shadowmask.engine.spark.hierarchy.mask
 import org.apache.commons.lang3.StringUtils
 
 class IdentifierRule(
-                     hierarchy: Int,
-                     maskChar: Char) extends GeneralizerRule[String, String] {
+                      hierarchy: Int,
+                      maskChar: Char) extends GeneralizerRule[String, String] {
 
   override def mask(input: String): String = {
 
-        ""
-
-
-//    val pattern = new Regex("""[\w-_]+(?:\.[\w-_]+)*)@((?:[a-z0-9]+(?:-[a-zA-Z0-9]+)*)+\.[a-z]{2,6}\""")
-//    println("---------"+(pattern findAllIn input).mkString(","))
-
-//    var remail = """/^([\w-_]+(?:\.[\w-_]+)*)@((?:[a-z0-9]+(?:-[a-zA-Z0-9]+)*)+\.[a-z]{2,6})$/i""".r
-//    println("---------"+(remail findAllIn input).mkString(","))
-
-
-    val sparkRegex="^[\\w-]+(\\.[\\w-]+)*@[\\w-]+(\\.[\\w-]+)+$".r
+    val sparkRegex = "^[\\w-]+(\\.[\\w-]+)*@[\\w-]+(\\.[\\w-]+)+$".r
 
     sparkRegex.findAllIn(input.toString)
 
-      println("++++++++++++++++"+sparkRegex.findAllIn(input.toString))
-
-
-
     if (input.length <= hierarchy) {
       StringUtils.repeat(maskChar, input.length)
-    } else {(hierarchy)match {
+    } else {
+      (hierarchy) match {
 
-      case(1)=>
-        maskChar+"@"+input.substring(input.indexOf("@")+1, input.length)
-      case(2)=>
-        maskChar+"@"+maskChar+"."+input.substring(input.indexOf(".")+1, input.length)
-      case(3)=>
-        maskChar+"@"+maskChar+"."+maskChar
+        case (1) =>
+          maskChar + "@" + input.substring(input.indexOf("@") + 1, input.length)
+        case (2) =>
+          maskChar + "@" + maskChar + "." + input.substring(input.indexOf(".") + 1, input.length)
+        case (3) =>
+          maskChar + "@" + maskChar + "." + maskChar
+      }
     }
-
-
-
-
-    }
-
   }
-
 }

@@ -17,12 +17,9 @@
  */
 package org.shadowmask.engine.spark.hierarchy.mask
 
-import org.apache.commons.lang3.StringUtils
-import org.shadowmask.core.mask.rules.suppressor.impl.AESSuppressor
-
 import scala.reflect.ClassTag
 
-class CipherRule[T: Numeric: ClassTag](bounds: Array[T])(implicit ev: ClassTag[T]) extends GeneralizerRule[T, Int] {
+class CipherRule[T: Numeric : ClassTag](bounds: Array[T])(implicit ev: ClassTag[T]) extends GeneralizerRule[T, Int] {
 
   private val range = new NumericRange[T](bounds)
 

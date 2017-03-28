@@ -21,28 +21,10 @@ import org.apache.commons.lang3.StringUtils
 import scala.util.matching.Regex
 
 class EmailRule(
-               hierarchy: Int,
-               maskChar: Char) extends GeneralizerRule[String, String] {
+                 hierarchy: Int,
+                 maskChar: Char) extends GeneralizerRule[String, String] {
 
   override def mask(input: String): String = {
-""
-
-
-//  def flagValidate(flag:Boolean):Boolean={
-//    var  flag=false
-//    val locationOfAt = input.indexOf('@');
-//    // there is only one '@' in the value and not in the beginning
-//    if (locationOfAt > 0 && locationOfAt == input.lastIndexOf('@')) {
-//      val locationOfDot = input.lastIndexOf('.');
-//      // there is a '.' after '@'
-//      if (locationOfDot > locationOfAt) {
-//        flag=true
-//      }
-//    }
-//  }
-
-
-
 
     if (input.length <= hierarchy) {
       StringUtils.repeat(maskChar, input.length)
@@ -59,9 +41,5 @@ class EmailRule(
           maskChar + "@" + maskChar + "." + maskChar
       }
     }
-
-
-
   }
-
 }
