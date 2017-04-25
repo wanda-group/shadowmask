@@ -23,26 +23,21 @@ import org.shadowmask.jdbc.connection.ConnectionProvider;
 import org.shadowmask.jdbc.connection.WrappedHiveConnectionProvider;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 
-import java.sql.Connection;
-
+/**
+ * a single hive execution task, DDL/DML etc.
+ * @param <DESC>
+ */
 public abstract class HiveExecutionTask<DESC extends JDBCConnectionDesc>
-    extends ExecutedJdbcTask<RollbackableProcedureWatcher,DESC> {
+    extends ExecutedJdbcTask<RollbackableProcedureWatcher, DESC> {
 
   ConnectionProvider<DESC> connectionProvider;
 
   @Override public void setUp() {
     connectionProvider = WrappedHiveConnectionProvider.getInstance();
+    super.setUp();
   }
 
-  @Override public Connection connectDB() {
-    if (connectionDesc() != null)
-      return connectionProvider.get(connectionDesc());
-    else
-      return connectionProvider.get();
+  @Override public ConnectionProvider<DESC> connectionProvider() {
+    return connectionProvider;
   }
-
-  @Override public boolean transationSupport() {
-    return false;
-  }
-
 }

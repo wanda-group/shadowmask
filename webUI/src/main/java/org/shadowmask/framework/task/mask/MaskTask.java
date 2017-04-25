@@ -56,7 +56,6 @@ public class MaskTask extends Task {
 
   private long createTime;
   private long submitTime;
-  private long executionTime;
   private long finishTime;
   private long exceptedTime;
 
@@ -83,7 +82,7 @@ public class MaskTask extends Task {
   }
 
   @Override public void triggerPreStart() {
-    this.executionTime = TimeUtil.nowMs();
+    this.submitTime = TimeUtil.nowMs();
     currentState = MaskTaskState.RUNNING;
     super.triggerPreStart();
   }
@@ -120,10 +119,6 @@ public class MaskTask extends Task {
     return submitTime;
   }
 
-  public long getExecutionTime() {
-    return executionTime;
-  }
-
   public long getFinishTime() {
     return finishTime;
   }
@@ -134,5 +129,9 @@ public class MaskTask extends Task {
 
   public MaskTaskState getCurrentState() {
     return currentState;
+  }
+
+  public void setTaskName(String taskName) {
+    this.taskName = taskName;
   }
 }

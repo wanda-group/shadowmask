@@ -28,33 +28,26 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A single sql Query Task : DSL .
+ *
+ * @param <T>
+ * @param <DESC>
+ */
 public abstract class HiveQueryTask<T extends Serializable, DESC extends JDBCConnectionDesc>
     extends QueryJdbcTask<T, ProcedureWatcher, DESC> {
 
-  List<T> res = null;
-
   ConnectionProvider<DESC> connectionProvider;
 
+  /**
+   * initialize connection provider .
+   */
   @Override public void setUp() {
-    super.setUp();
-    res = new ArrayList<>();
     connectionProvider = WrappedHiveConnectionProvider.getInstance();
+    super.setUp();
   }
 
-  @Override public void collect(T t) {
-    res.add(t);
+  @Override public ConnectionProvider<DESC> connectionProvider() {
+    return connectionProvider;
   }
-
-  @Override public List<T> queryResults() {
-    return res;
-  }
-
-  @Override public Connection connectDB() {
-    if (connectionDesc() != null) {
-      return connectionProvider.get(connectionDesc());
-    } else {
-      return connectionProvider.get();
-    }
-  }
-
 }

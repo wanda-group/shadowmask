@@ -419,6 +419,13 @@
             "description": "name of dataset",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "columns",
+            "in": "query",
+            "description": "columns joined by \"#\"",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
@@ -784,6 +791,9 @@
           "type": "string"
         },
         "distName": {
+          "type": "string"
+        },
+        "taskName": {
           "type": "string"
         },
         "rules": {

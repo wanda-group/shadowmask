@@ -15,51 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.shadowmask.jdbc.connection;
+package org.shadowmask.framework.task;
 
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
-import org.shadowmask.utils.ReThrow;
 
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.PreparedStatement;
 
 /**
- * a connection provider which can get() Connection from
- * a connection descriptor and release() Connection via method release();
+ * a kind of task only execute single SQL statement
  *
+ * @param <W>
  * @param <DESC>
  */
-public abstract class ConnectionProvider<DESC extends JDBCConnectionDesc>
-    implements Supplier<Connection> {
-
-
-  @Deprecated
-  @Override public Connection get() {
-    return null;
-  }
+public abstract class SingleSQLJdbcTask<W extends ProcedureWatcher, DESC extends JDBCConnectionDesc>
+    extends JDBCTask<W, DESC> {
 
   /**
-   * get a connection from an jdbc connection description
+   * executable sql. could be setup at client-end .
    *
-   * @param desc
    * @return
    */
-  public abstract Connection get(DESC desc);
-
-  /**
-   * release a connection .
-   *
-   * @param connection
-   */
-  public void release(Connection connection) {
-    try {
-      if (connection != null) {
-        connection.close();
-      }
-    } catch (SQLException e) {
-      ReThrow.rethrow(e);
-    }
-  }
+  public abstract String sql();
 
 }

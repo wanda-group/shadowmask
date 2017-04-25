@@ -21,13 +21,15 @@ package org.shadowmask.web.service
 
 import java.sql.{Connection, ResultSet}
 
+import com.google.gson.{Gson, JsonObject}
 import org.shadowmask.core
 import org.shadowmask.core.discovery.DataTypeDiscovery
 import org.shadowmask.framework.datacenter.hive._
-import org.shadowmask.framework.task.{JdbcResultCollector, RollbackableProcedureWatcher, SimpleRollbackWatcher, Watcher}
-import org.shadowmask.framework.task.hive.{HiveExecutionTask, HiveQueryTask}
+import org.shadowmask.framework.task._
+import org.shadowmask.framework.task.hive.{HiveBatchedTask, HiveExecutionTask, HiveQueryTask}
 import org.shadowmask.framework.task.mask.MaskTask
-import org.shadowmask.jdbc.connection.description.{KerberizedHive2JdbcConnDesc, SimpleHive2JdbcConnDesc}
+import org.shadowmask.jdbc.connection.ConnectionProvider
+import org.shadowmask.jdbc.connection.description.{JDBCConnectionDesc, KerberizedHive2JdbcConnDesc, SimpleHive2JdbcConnDesc}
 import org.shadowmask.model.data.TitleType
 import org.shadowmask.web.api.MaskRules
 import org.shadowmask.web.api.MaskRules._
@@ -102,10 +104,10 @@ class HiveService {
     *
     * @param request
     */
-  def submitMaskTask(request: MaskRequest): Unit = {
-    val maskSql = getMaskSql(request);
+  def submitMaskTask(request: MaskRequest): String = {
+    val maskSql = getMaskSql(request)
     val dcs = HiveDcs.dcCotainer
-    val dc = dcs.getDc(request.dsSource.get);
+    val dc = dcs.getDc(request.dsSource.get)
     val hiveTask = dc match {
       case dc: SimpleHiveDc => new HiveExecutionTask[SimpleHive2JdbcConnDesc] {
         override def sql(): String = maskSql
@@ -132,7 +134,9 @@ class HiveService {
         connection.commit()
       }
     })
-    HiveMaskTaskContainer().submitTask(new MaskTask(hiveTask))
+    val task = new MaskTask(hiveTask)
+    task.setTaskName(request.taskName.get)
+    HiveMaskTaskContainer().submitTask(task)
     maskSql
   }
 
@@ -218,6 +222,157 @@ class HiveService {
         }).toList
       )
     })
+  }
+
+
+  /**
+    * drop a table (view) according its name .
+    *
+    * @param dcName
+    * @param schemaName
+    * @param tableName
+    */
+  def dropTableOrView(dcName: String, schemaName: String, tableName: String): Unit = {
+    val dcs = HiveDcs.dcCotainer
+    val dc = dcs.getDc(dcName);
+
+    def innerProcess[D <: JDBCConnectionDesc](connection: Connection, parentTask: HiveBatchedTask[D]): Unit = {
+
+      val queryTask = new HiveQueryTask[String, JDBCConnectionDesc] {
+        override def collector(): JdbcResultCollector[String] = new JdbcResultCollector[String] {
+          override def collect(resultSet: ResultSet): String = {
+            if (!resultSet.getString(1).toLowerCase().trim.startsWith("create view")) "table" else "view"
+          }
+        }
+
+        override def sql(): String = s"show create table $tableName"
+
+        override def connectionDesc(): JDBCConnectionDesc = null
+      }
+      //must explicit
+      parentTask.useConnection(queryTask, connection);
+      Executor().executeTaskSync(queryTask)
+      val tableType = queryTask.queryResults().get(0);
+      val dTask = new HiveExecutionTask[JDBCConnectionDesc] {
+        override def sql(): String = s"drop $tableType $tableName"
+
+        override def connectionDesc(): JDBCConnectionDesc = null
+      }
+      //must explicit
+      parentTask.useConnection(dTask, connection)
+      Executor().executeTaskSync(dTask)
+
+    }
+
+    val dropTask = dc match {
+      case dc: SimpleHiveDc =>
+        val desc = conSimpleDc2Desc(dc, schemaName)
+        new HiveBatchedTask[SimpleHive2JdbcConnDesc] {
+          override def process(connection: Connection): Unit = innerProcess(connection, this)
+
+          override def connectionDesc(): SimpleHive2JdbcConnDesc = desc
+        }
+      case dc: KerberizedHiveDc =>
+        val desc = conKrbDc2Desc(dc, schemaName)
+        new HiveBatchedTask[KerberizedHive2JdbcConnDesc] {
+
+          override def process(connection: Connection): Unit = innerProcess(connection, this)
+
+          override def connectionDesc(): KerberizedHive2JdbcConnDesc = desc
+        }
+    }
+    Executor().executeTaskSync(dropTask)
+
+  }
+
+
+  def getRiskViewObject(dcName: String, schemaName: String, name: String, columns: Array[String]): Option[List[RiskItems]] = {
+    caculateRisk(dcName, schemaName, name, columns).flatMap(s => {
+      val json = new Gson().fromJson(s._2, classOf[JsonObject])
+
+      val iterator = json.entrySet().iterator()
+      var res = List[RiskItems]()
+      while (iterator.hasNext) {
+        val n = iterator.next()
+        res = RiskItems("0",s._1+"_"+n.getKey,n.getValue.toString)::res
+      }
+      res
+    })
+  }
+
+
+  /**
+    * caculate privacy disclosure rask .
+    *
+    * @param dcName
+    * @param schemaName
+    * @param name
+    * @param columns
+    */
+  def caculateRisk(dcName: String, schemaName: String, name: String, columns: Array[String]): List[(String, String)] = {
+    val dcs = HiveDcs.dcCotainer
+    val dc = dcs.getDc(dcName)
+
+    var result = List[(String, String)]()
+    def innerProcess[D <: JDBCConnectionDesc](connection: Connection, parentTask: HiveBatchedTask[D], d: D): Unit = {
+      class PTask(funcName: String) extends HiveQueryTask[String, D] {
+
+        this.withConnectionProvider(new ConnectionProvider[D] {
+          override def get(desc: D): Connection = connection
+
+          override def release(connection: Connection): Unit = {}
+        })
+
+        override def collector(): JdbcResultCollector[String] = new JdbcResultCollector[String] {
+          override def collect(resultSet: ResultSet): String = resultSet.getString(1)
+        }
+
+        override def sql(): String = s"SELECT $funcName(${columns.mkString(",")}) FROM $name"
+
+        override def connectionDesc(): D = d
+      }
+      for ((name, (func, _)) <- MaskRules.evaluateFunc) {
+        val task = new PTask(func)
+        Executor().executeTaskSync(task)
+        result = (name, task.queryResults().get(0)) :: result
+      }
+
+    }
+
+    val task = dc match {
+      case dc: SimpleHiveDc =>
+        val desc = conSimpleDc2Desc(dc, schemaName)
+        new HiveBatchedTask[SimpleHive2JdbcConnDesc] {
+          override def process(connection: Connection): Unit = innerProcess(connection, this, null)
+
+          override def connectionDesc(): SimpleHive2JdbcConnDesc = desc
+        }
+      case dc: KerberizedHiveDc =>
+        val desc = conKrbDc2Desc(dc, schemaName)
+        new HiveBatchedTask[KerberizedHive2JdbcConnDesc] {
+          override def process(connection: Connection): Unit = innerProcess(connection, this, null)
+
+          override def connectionDesc(): KerberizedHive2JdbcConnDesc = desc
+        }
+    }
+
+    task.registerWatcher(new SimpleWatcher {
+
+      //prepare udfs .
+      override def onConnection(connection: Connection): Unit = {
+        connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute()
+        connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute()
+        connection.prepareStatement("set hive.execution.engine=spark").execute();
+        for ((k, (func, clazz)) <- MaskRules.evaluateFunc) {
+          val sql = s"CREATE TEMPORARY FUNCTION $func AS '$clazz'"
+          connection.prepareStatement(sql).execute();
+          println(s"$sql;")
+        }
+        connection.commit()
+      }
+    })
+    Executor().executeTaskSync(task)
+    result
   }
 
 
