@@ -20,7 +20,6 @@ package org.shadowmask.framework.datacenter.hive;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
-import org.shadowmask.utils.HiveProps;
 
 import java.io.IOException;
 

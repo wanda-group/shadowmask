@@ -49,6 +49,11 @@ object MaskRules {
     "Mapping" ->("sk_mapping", "org.shadowmask.engine.hive.udf.UDFUIdentifier", Nil)
   )
 
+  val evaluateFunc = Map(
+    "KAnonymity"->("kanonymity","org.shadowmask.engine.hive.udf.GenericUDAFKAnonymity")
+//    "LDeversity"->("ldeversity","org.shadowmask.engine.hive.udf.GenericUDAFLDeversity")
+  )
+
   def buildFunction(funcKey: String): Option[SqlFuncTemplate] = {
     commonFuncMap.get(funcKey) match {
       case None => None

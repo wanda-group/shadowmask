@@ -21,7 +21,6 @@
       <artifactId>shadowmask-core</artifactId>
       <version>0.1-SNAPSHOT</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>

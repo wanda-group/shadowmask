@@ -57,7 +57,7 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
   get("/cloumnTypes", operation(dataCloumnTypesGetOperation)) {
 
 
-    val authToken = request.getHeader("authToken")
+    val authToken = request.getHeader("Authorization")
 
     println("authToken: " + authToken)
     CloumnTypeResult(
@@ -74,21 +74,20 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   val dataTaskGetOperation = (apiOperation[TaskResult]("dataTaskGet")
     summary "fetch all task in some state ."
-    parameters(headerParam[String]("authorization").description(""), queryParam[String]("taskType").description(""), queryParam[String]("fetchType").description(""), queryParam[Int]("pageNum").description("").optional, queryParam[Int]("pageSize").description("").optional)
+    parameters(headerParam[String]("authorization").description(""),
+    queryParam[String]("taskType").description("0-submited,1-finished,2-failed"),
+    queryParam[String]("fetchType").description("0-all,1-paging"),
+    queryParam[Int]("pageNum").description("index of page , 0-based ,default to 0").optional,
+    queryParam[Int]("pageSize").description("pageSize").optional)
     )
 
   get("/task", operation(dataTaskGetOperation)) {
 
     val authorization = request.getHeader("authorization")
-    println("authorization: " + authorization)
     val taskType = params.getAs[String]("taskType")
-    println("taskType: " + taskType)
     val fetchType = params.getAs[String]("fetchType")
-    println("fetchType: " + fetchType)
     val pageNum = params.getAs[Int]("pageNum")
-    println("pageNum: " + pageNum)
     val pageSize = params.getAs[Int]("pageSize")
-    println("pageSize: " + pageSize)
 
     fetchType.get match {
       case "0" => HiveService().getAllTask(taskType.get.toInt)

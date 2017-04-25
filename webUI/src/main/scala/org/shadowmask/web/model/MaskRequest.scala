@@ -34,5 +34,6 @@ case class MaskRequest(
                         distType: Option[String], // TABLE,VIEW etc
                         distSchema: Option[String],
                         distName: Option[String],
+                        taskName: Option[String],
                         rules: Option[List[ColRule]]
                       )

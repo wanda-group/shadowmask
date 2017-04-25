@@ -15,51 +15,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.shadowmask.framework.task;
 
-package org.shadowmask.jdbc.connection;
-
+import org.shadowmask.jdbc.connection.ConnectionProvider;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
-import org.shadowmask.utils.ReThrow;
 
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * a connection provider which can get() Connection from
- * a connection descriptor and release() Connection via method release();
+ * execute several jdbc query task with a single Jdbc connection .
  *
  * @param <DESC>
  */
-public abstract class ConnectionProvider<DESC extends JDBCConnectionDesc>
-    implements Supplier<Connection> {
-
-
-  @Deprecated
-  @Override public Connection get() {
-    return null;
-  }
+public abstract class BatchedJdbcTask<DESC extends JDBCConnectionDesc>
+    extends JDBCTask<ProcedureWatcher, DESC> {
 
   /**
-   * get a connection from an jdbc connection description
-   *
-   * @param desc
-   * @return
-   */
-  public abstract Connection get(DESC desc);
-
-  /**
-   * release a connection .
-   *
+   * register connection provider for a task .
+   * @param task
    * @param connection
    */
-  public void release(Connection connection) {
-    try {
-      if (connection != null) {
-        connection.close();
+  public void useConnection(JDBCTask task, final Connection connection) {
+
+    task.withConnectionProvider(new ConnectionProvider() {
+      @Override public Connection get(JDBCConnectionDesc desc) {
+        return connection;
       }
-    } catch (SQLException e) {
-      ReThrow.rethrow(e);
-    }
+
+      @Override public void release(Connection connection) {
+        //do nothing
+      }
+    });
+
+
+
   }
 
 }

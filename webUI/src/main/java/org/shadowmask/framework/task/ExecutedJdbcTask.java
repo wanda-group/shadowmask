@@ -31,48 +31,10 @@ import java.sql.SQLException;
  * Executed jdbc  task .
  */
 public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher, DESC extends JDBCConnectionDesc>
-    extends JDBCTask<W, DESC> {
+    extends SingleSQLJdbcTask<W, DESC> {
   Logger logger = Logger.getLogger(this.getClass());
 
-  Connection connection = null;
-
-  @Override public void invoke() {
-
-    try {
-      triggerPreStart();
-      run();
-      triggerComplete();
-    } catch (Exception e) {
-      e.printStackTrace();
-      logger.warn(
-          String.format("Exception occurred when execute sql[ %s ]", sql()), e);
-      triggerException(e);
-      if (transationSupport()) {
-        try {
-          triggerPreRollback();
-          connection.rollback();
-          triggerRollbackCompleted();
-        } catch (SQLException e1) {
-          triggerRollbackException(e1);
-        }
-      }
-      ReThrow.rethrow(e);
-    } finally {
-      if (connection != null)
-        try {
-          connection.close();
-        } catch (SQLException e) {
-          logger.warn(String
-              .format("Exception occurred when release connection[ %s ]",
-                  connection), e);
-          ReThrow.rethrow(e);
-        }
-    }
-  }
-
-  @Override public void run() {
-    connection = connectDB();
-    triggerConnectionBuilt(connection);
+  @Override public void process(Connection connection) throws Exception {
     PreparedStatement stm = null;
     try {
       stm = connection.prepareStatement(sql());
@@ -80,8 +42,10 @@ public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher, D
       if (transationSupport()) {
         connection.commit();
       }
-    } catch (SQLException e) {
-      ReThrow.rethrow(e);
+    } finally {
+      if (stm != null) {
+        stm.close();
+      }
     }
 
   }
@@ -89,7 +53,7 @@ public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher, D
   /**
    * trigger preRollback .
    */
-  void triggerPreRollback() {
+  @Override public void triggerPreRollback() {
     if (getAllWatchers() != null) {
       for (final W w : getAllWatchers()) {
         NeverThrow.exe(new Command() {
@@ -104,7 +68,7 @@ public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher, D
   /**
    * trigger rollbackException
    */
-  void triggerRollbackException(final Throwable t) {
+  @Override public void triggerRollbackException(final Throwable t) {
     if (getAllWatchers() != null) {
       for (final W w : getAllWatchers()) {
         NeverThrow.exe(new Command() {
@@ -119,7 +83,7 @@ public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher, D
   /**
    * trigger rollback completed .
    */
-  void triggerRollbackCompleted() {
+  @Override public void triggerRollbackCompleted() {
     if (getAllWatchers() != null) {
       for (final W w : getAllWatchers()) {
         NeverThrow.exe(new Command() {

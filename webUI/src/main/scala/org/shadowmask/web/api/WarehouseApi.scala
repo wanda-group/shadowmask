@@ -18,6 +18,7 @@
 
 package org.shadowmask.web.api
 
+import com.google.gson.Gson
 import org.json4s._
 import org.scalatra.ScalatraServlet
 import org.scalatra.json.JacksonJsonSupport
@@ -26,8 +27,6 @@ import org.scalatra.swagger._
 import org.shadowmask.web.common.user.ConfiguredAuthProvider
 import org.shadowmask.web.model._
 import org.shadowmask.web.service.HiveService
-
-import scala.collection.immutable.List
 
 class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
   with FileUploadSupport
@@ -59,31 +58,13 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   //some browses support get or post only .
   post("/dataset/delete", operation(warehouseDatasetDeleteOperation)) {
-
-
     val authToken = request.getHeader("authToken")
-
-    println("authToken: " + authToken)
-
-
     val source = params.getAs[String]("source")
-
-    println("source: " + source)
-
-
     val datasetType = params.getAs[String]("datasetType")
-
-    println("datasetType: " + datasetType)
-
-
     val schema = params.getAs[String]("schema")
-
-    println("schema: " + schema)
-
-
     val name = params.getAs[String]("name")
 
-    println("name: " + name)
+    HiveService().dropTableOrView(source.get, schema.get, name.get)
     SimpleResult(0, "ok");
   }
 
@@ -104,7 +85,6 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
 
     SimpleResult(0, "ok");
   }
-
 
 
   val warehouseMaskRulesGetOperation = (apiOperation[MaskRulesResult]("warehouseMaskRulesGet")
@@ -129,46 +109,25 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   val warehousePrivacyRiskGetOperation = (apiOperation[PriRiskResult]("warehousePrivacyRiskGet")
     summary "fetch all mask rules supported ."
-    parameters(headerParam[String]("Authorization").description(""),
-    queryParam[String]("source").description(""),
-    queryParam[String]("datasetType").description(""),
-    queryParam[String]("schema").description(""),
-    queryParam[String]("name").description(""))
+    parameters(headerParam[String]("authorization").description(""),
+    queryParam[String]("source").description("HIVE,SPARK, etc."),
+    queryParam[String]("datasetType").description("VIEW,TABLE,etc"),
+    queryParam[String]("schema").description("the schema witch the dataset belongs to"),
+    queryParam[String]("name").description("name of dataset"),
+    queryParam[String]("columns").description("columns joined by \"#\""))
     )
 
   get("/privacyRisk", operation(warehousePrivacyRiskGetOperation)) {
-
-
-    val authToken = request.getHeader("authToken")
-
-    println("authToken: " + authToken)
-
-
+    val authToken = request.getHeader("Authorization")
     val source = params.getAs[String]("source")
-
-    println("source: " + source)
-
-
     val datasetType = params.getAs[String]("datasetType")
-
-    println("datasetType: " + datasetType)
-
-
     val schema = params.getAs[String]("schema")
-
-    println("schema: " + schema)
-
-
     val name = params.getAs[String]("name")
-
-    println("name: " + name)
-
+    val columns = params.getAs[String]("columns")
     PriRiskResult(
       0,
       "ok",
-      List(
-        RiskItems("1", "l", "10"), RiskItems("2", "K", "10"), RiskItems("T", "l", "0.7")
-      )
+      HiveService().getRiskViewObject(source.get, schema.get, name.get, columns.get.split("#"))
     )
   }
 }

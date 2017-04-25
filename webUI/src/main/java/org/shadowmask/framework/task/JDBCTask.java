@@ -18,11 +18,14 @@
 
 package org.shadowmask.framework.task;
 
+import org.shadowmask.jdbc.connection.ConnectionProvider;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.model.datareader.Command;
 import org.shadowmask.utils.NeverThrow;
+import org.shadowmask.utils.ReThrow;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +36,11 @@ public abstract class JDBCTask<W extends ProcedureWatcher, DESC extends JDBCConn
     extends Task<W> {
 
   private final List<W> watchers = new ArrayList<>();
+
+  /**
+   * connection
+   */
+  ConnectionProvider<DESC> provider;
 
   @Override synchronized public void registerWatcher(W watcher) {
     watchers.add(watcher);
@@ -50,8 +58,6 @@ public abstract class JDBCTask<W extends ProcedureWatcher, DESC extends JDBCConn
     return watchers;
   }
 
-
-
   /**
    * trigger preStart
    */
@@ -68,25 +74,94 @@ public abstract class JDBCTask<W extends ProcedureWatcher, DESC extends JDBCConn
   }
 
   /**
-   * get Connection of backend database, must executed lazily because of Connection object cannot be serialized
-   *
-   * @return
+   * trigger preRollback .
    */
-  public abstract Connection connectDB();
+  public void triggerPreRollback() {
+  }
 
   /**
-   * executable sql. could be setup at client-end .
+   * trigger rollbackException
+   */
+  public void triggerRollbackException(final Throwable t) {
+  }
+
+  /**
+   * trigger rollback completed .
+   */
+  public void triggerRollbackCompleted() {
+  }
+
+  @Override public void setUp() {
+    super.setUp();
+    withConnectionProvider(connectionProvider());
+  }
+
+  @Override public void run() {
+    Connection connection = null;
+    try {
+      connection = provider.get(connectionDesc());
+      triggerConnectionBuilt(connection);
+      process(connection);
+      if (transationSupport()) {
+        connection.commit();
+      }
+    } catch (Exception e) {
+      if (transationSupport()) {
+        try {
+          triggerPreRollback();
+          connection.rollback();
+          triggerRollbackCompleted();
+        } catch (SQLException e1) {
+          triggerRollbackException(e1);
+          ReThrow.rethrow(e1);
+        }
+      }
+      ReThrow.rethrow(e);
+    } finally {
+      try {
+        provider.release(connection);
+      } catch (Exception e) {
+        ReThrow.rethrow(e);
+      }
+    }
+  }
+
+  /**
+   * can be invoked in runtime to change the connection provider .
+   *
+   * @param connectionProvider
+   */
+  public void withConnectionProvider(
+      ConnectionProvider<DESC> connectionProvider) {
+    if (this.provider == null) {
+      this.provider = connectionProvider;
+    }
+  }
+
+  /**
+   * a connection provider which can get() Connection from
+   * a connection descriptor and release() Connection via method release();
    *
    * @return
    */
-  public abstract String sql();
+  public abstract ConnectionProvider<DESC> connectionProvider();
+
+  /**
+   * process with connection obtained from connectDB();
+   *
+   * @param connection
+   * @throws Exception
+   */
+  public abstract void process(Connection connection) throws Exception;
 
   /**
    * dose backend database support rollback.
    *
    * @return
    */
-  public abstract boolean transationSupport();
+  public boolean transationSupport() {
+    return false;
+  }
 
   /**
    * connection string description

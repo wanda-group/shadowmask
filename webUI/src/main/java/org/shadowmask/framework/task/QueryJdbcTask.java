@@ -18,7 +18,6 @@
 
 package org.shadowmask.framework.task;
 
-import org.apache.log4j.Logger;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.utils.ReThrow;
 
@@ -27,13 +26,23 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class QueryJdbcTask<T extends Serializable, W extends ProcedureWatcher, DESC extends JDBCConnectionDesc>
-    extends JDBCTask<W, DESC> {
-  Logger logger = Logger.getLogger(this.getClass());
+    extends SingleSQLJdbcTask<W, DESC> {
+  Logger logger = LoggerFactory.getLogger(this.getClass());
+
+  /**
+   * query result will collected in this list .
+   */
+  List<T> res = null;
 
   @Override public void setUp() {
+    super.setUp();
+    res = new ArrayList<>();
   }
 
   @Override public boolean transationSupport() {
@@ -52,21 +61,21 @@ public abstract class QueryJdbcTask<T extends Serializable, W extends ProcedureW
    *
    * @param t
    */
-  public abstract void collect(T t);
+  public void collect(T t){
+    res.add(t);
+  }
 
   /**
-   * execution result .
+   * query result .
    *
    * @return
    */
-  public abstract List<T> queryResults();
+  public List<T> queryResults() {
+    return res;
+  }
 
-  Connection connection = null;
-
-  @Override public void run() {
+  @Override public void process(Connection connection) throws Exception {
     PreparedStatement stm = null;
-    connection = connectDB();
-    triggerConnectionBuilt(connection);
     try {
       stm = connection.prepareStatement(sql());
       ResultSet resultSet = stm.executeQuery();
@@ -75,42 +84,11 @@ public abstract class QueryJdbcTask<T extends Serializable, W extends ProcedureW
           collect(collector().collect(resultSet));
         }
       }
-    } catch (SQLException e) {
-      ReThrow.rethrow(e);
     } finally {
       if (stm != null) {
-        try {
-          stm.close();
-        } catch (SQLException e) {
-          logger.warn(String
-              .format("Exception occurred when close statement[ %s ]", stm), e);
-        }
+        stm.close();
       }
     }
 
-  }
-
-  @Override public void invoke() {
-    try {
-      triggerPreStart();
-      run();
-      triggerComplete();
-    } catch (Throwable e) {
-      triggerException(e);
-      logger.warn(
-          String.format("Exception occurred when execute sql[ %s ]", sql()), e);
-      ReThrow.rethrow(e);
-    } finally {
-      if (connection != null) {
-        try {
-          connection.close();
-        } catch (SQLException e) {
-          logger.warn(String
-              .format("Exception occurred when release connection[ %s ]",
-                  connection), e);
-          ReThrow.rethrow(e);
-        }
-      }
-    }
   }
 }
