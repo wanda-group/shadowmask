@@ -18,6 +18,8 @@
 
 package org.shadowmask.jdbc.connection;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
 import org.shadowmask.jdbc.connection.description.SimpleHive2JdbcConnDesc;
@@ -31,16 +33,32 @@ import java.sql.Connection;
 public class WrappedHiveConnectionProvider<DESC extends JDBCConnectionDesc>
     extends ConnectionProvider<DESC> {
 
+
+  Map<Connection,String> connectionType = new ConcurrentHashMap<>();
+
   @Override public Connection get(DESC desc) {
     if (desc instanceof KerberizedHive2JdbcConnDesc) {
-      return KerberizedHiveConnectionProvider.getInstance()
+      Connection connection =  KerberizedHiveConnectionProvider.getInstance()
           .get((KerberizedHive2JdbcConnDesc) desc);
+      connectionType.put(connection,"K");
+      return connection;
     } else if (desc instanceof SimpleHive2JdbcConnDesc) {
-      return SimpleHiveConnectionProvider.getInstance()
+      Connection connection = SimpleHiveConnectionProvider.getInstance()
           .get((SimpleHive2JdbcConnDesc) desc);
+      connectionType.put(connection,"S");
+      return connection;
     } else {
       throw new RuntimeException(
           String.format("connection description %s not supported.", desc));
+    }
+  }
+
+  @Override
+  public void release(Connection connection) {
+    if("K".equals(connectionType.get(connection))){
+      KerberizedHiveConnectionProvider.getInstance().release(connection);
+    }else {
+      SimpleHiveConnectionProvider.getInstance().release(connection);
     }
   }
 

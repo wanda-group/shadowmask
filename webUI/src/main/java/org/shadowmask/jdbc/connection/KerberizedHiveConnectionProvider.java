@@ -18,12 +18,14 @@
 
 package org.shadowmask.jdbc.connection;
 
-import org.apache.log4j.Logger;
-import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.log4j.Logger;
+import org.shadowmask.cache.PoolByKey;
+import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
 
 public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcConnDesc>
     extends ConnectionProvider<DESC> {
@@ -32,15 +34,33 @@ public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcCo
       Logger.getLogger(KerberizedHiveConnectionProvider.class);
 
 
-  @Override public Connection get(DESC desc) {
-    try {
-      return DriverManager.getConnection(desc.toUrl());
-    } catch (SQLException e) {
-      logger.warn("get jdbc connection failed", e);
-      throw new RuntimeException("get connection failed", e);
+  private PoolByKey<String, Connection> cache = new PoolByKey<String, Connection>() {
+
+    @Override
+    protected Connection getObjectFromKey(String k) {
+      try {
+        return DriverManager.getConnection(k);
+      } catch (SQLException e) {
+        logger.warn("get jdbc connection failed", e);
+        throw new RuntimeException("get connection failed", e);
+      }
     }
+  };
+
+  Map<Connection, String> connectionUrl = new ConcurrentHashMap<>();
+
+
+  @Override
+  public Connection get(DESC desc) {
+    Connection connection = cache.borrow(desc.toUrl());
+    connectionUrl.put(connection, desc.toUrl());
+    return connection;
   }
 
+  @Override
+  public void release(Connection connection) {
+    cache.release(connectionUrl.get(connection), connection);
+  }
 
   // singleton
   private KerberizedHiveConnectionProvider() {
