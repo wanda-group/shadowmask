@@ -7,7 +7,7 @@
   },
   "host": "127.0.0.1",
   "schemes": [
-    "https"
+    "http"
   ],
   "basePath": "/",
   "produces": [
@@ -17,6 +17,9 @@
     "/admin/login": {
       "post": {
         "summary": "Adminstrator login api",
+        "consumes": [
+          "multipart/form-data"
+        ],
         "parameters": [
           {
             "name": "username",
@@ -53,6 +56,13 @@
             "description": "auth token",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "dcName",
+            "in": "query",
+            "description": "data center name",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
@@ -68,6 +78,9 @@
     "/admin/grant": {
       "post": {
         "summary": "grant priviledges.",
+        "consumes": [
+          "multipart/form-data"
+        ],
         "parameters": [
           {
             "name": "Authorization",
@@ -282,6 +295,9 @@
     "/warehouse/dataset/delete": {
       "post": {
         "summary": "delete an table",
+        "consumes": [
+          "multipart/form-data"
+        ],
         "parameters": [
           {
             "name": "Authorization",

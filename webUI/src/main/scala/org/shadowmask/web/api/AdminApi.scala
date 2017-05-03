@@ -25,6 +25,7 @@ import org.scalatra.servlet.FileUploadSupport
 import org.scalatra.swagger._
 import org.shadowmask.web.common.user.{ConfiguredAuthProvider, User}
 import org.shadowmask.web.model._
+import org.shadowmask.web.service.HiveService
 
 class AdminApi(implicit val swagger: Swagger) extends ScalatraServlet
   with FileUploadSupport
@@ -50,24 +51,24 @@ class AdminApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   val adminUsersGetOperation = (apiOperation[UserResult]("adminUsersGet")
     summary "get all users."
-    parameters (headerParam[String]("Authorization").description("authentication token"))
+    parameters(headerParam[String]("authorization").description(""),
+    queryParam[String]("dcName").description(""))
     )
 
   get("/users", operation(adminUsersGetOperation)) {
 
 
-    val authToken = request.getHeader("authToken")
+    val authToken = request.getHeader("Authorization")
 
     println("authToken: " + authToken)
-
+    val dcName = params.getAs[String]("dcName")
+    println("dcName: " + dcName)
     UserResult(
       Some(0),
       Some("ok"),
-      Some(List(
-        UserItem(Some("zhangsan"), Some("张三")),
-        UserItem(Some("xxx"), Some("hdfs")),
-        UserItem(Some("admin"), Some("超管"))
-      ))
+      Some(
+        HiveService().getAllRoles(dcName.get).map(name => UserItem(Some(name), Some(name))).toList
+      )
     )
   }
 
@@ -131,7 +132,10 @@ class AdminApi(implicit val swagger: Swagger) extends ScalatraServlet
     val user = params.getAs[String]("user")
 
     println("user: " + user)
-    SimpleResult(Some(1), Some(""));
+
+    HiveService().grant(source.get, schema.get, name.get, user.get)
+
+    SimpleResult(Some(0), Some("ok"));
   }
 
 

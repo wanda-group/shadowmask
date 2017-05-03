@@ -22,7 +22,6 @@ package org.shadowmask.web.service
 import java.sql.{Connection, ResultSet}
 
 import com.google.gson.{Gson, JsonObject}
-import org.shadowmask.core
 import org.shadowmask.core.discovery.DataTypeDiscovery
 import org.shadowmask.framework.datacenter.hive._
 import org.shadowmask.framework.task._
@@ -79,7 +78,8 @@ class HiveService {
         for ((name, cType) <- getTableTile(dcName, schemaName, tableName).get) yield {
           new javafx.util.Pair[String, String](name, if (data.get.size > 0) {
             i += 1;
-            data.get(0)(i - 1)
+            val value = data.get(0)(i - 1)
+            if (value == null) "" else value
           } else "")
         }
       val types = DataTypeDiscovery.inspectTypes(titleAndValue.asJava).asScala.toList
@@ -123,21 +123,69 @@ class HiveService {
     hiveTask.registerWatcher(new SimpleRollbackWatcher() {
       override def onConnection(connection: Connection): Unit = {
         // todo make this configurable .
-        connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute();
-        connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute();
-        connection.prepareStatement("set hive.execution.engine=spark").execute();
+        //        connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute();
+        //        connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute();
+        //        connection.prepareStatement("set hive.execution.engine=spark").execute();
         for ((k, (func, clazz, _)) <- MaskRules.commonFuncMap) {
           val sql = s"CREATE TEMPORARY FUNCTION $func AS '$clazz'"
           connection.prepareStatement(sql).execute();
           println(s"$sql;")
         }
-        connection.commit()
+        //        connection.commit()
       }
     })
     val task = new MaskTask(hiveTask)
     task.setTaskName(request.taskName.get)
     HiveMaskTaskContainer().submitTask(task)
     maskSql
+  }
+
+  def getAllRoles(dcName: String): List[String] = {
+    val dc = HiveDcs.dcCotainer.getDc(dcName);
+
+    val roleNameCollector = new JdbcResultCollector[String] {
+      override def collect(resultSet: ResultSet): String =
+        resultSet.getString(1)
+    }
+
+    val task = dc match {
+      case dc: SimpleHiveDc => new HiveQueryTask[String, SimpleHive2JdbcConnDesc] {
+        override def collector(): JdbcResultCollector[String] = roleNameCollector
+
+        override def sql(): String = "show roles"
+
+        override def connectionDesc(): SimpleHive2JdbcConnDesc = conSimpleDc2Desc(dc, "default")
+      }
+      case dc: KerberizedHiveDc => new HiveQueryTask[String, KerberizedHive2JdbcConnDesc] {
+        override def collector(): JdbcResultCollector[String] = roleNameCollector
+
+        override def sql(): String = "show roles"
+
+        override def connectionDesc(): KerberizedHive2JdbcConnDesc = conKrbDc2Desc(dc, "default")
+      }
+    }
+    Executor().executeTaskSync(task)
+    task.queryResults().asScala.toList
+  }
+
+  def grant(dcName: String, schema: String, tableName: String, role: String): Unit = {
+    val dc = HiveDcs.dcCotainer.getDc(dcName);
+    val sqlStr = s"grant ALL on table $tableName to role $role"
+    println(sqlStr)
+    val task = dc match {
+      case dc: SimpleHiveDc =>
+        new HiveExecutionTask[SimpleHive2JdbcConnDesc] {
+          override def sql(): String = sqlStr
+
+          override def connectionDesc(): SimpleHive2JdbcConnDesc = conSimpleDc2Desc(dc,schema)
+        }
+      case dc: KerberizedHiveDc => new HiveExecutionTask[KerberizedHive2JdbcConnDesc] {
+        override def sql(): String = sqlStr
+
+        override def connectionDesc(): KerberizedHive2JdbcConnDesc = conKrbDc2Desc(dc,schema)
+      }
+    }
+    Executor().executeTaskSync(task)
   }
 
   /**
@@ -159,9 +207,9 @@ class HiveService {
       )
       ] =
       (for (col <- request.rules.get) yield (
-        col.colName.get ->(col.rule.get.maskTypeID.get, col.rule.get.maskRuleID.get
+        col.colName.get -> (col.rule.get.maskTypeID.get, col.rule.get.maskRuleID.get
           , (for (param <- col.rule.get.maskParams.get) yield (param.paramName.get -> param.paramValue.get)).toMap
-          )
+        )
         )).toMap
 
     val columns = getTableTile(request.dsSource.get, request.dsSchema.get, request.dsTable.get) match {
@@ -294,7 +342,7 @@ class HiveService {
       var res = List[RiskItems]()
       while (iterator.hasNext) {
         val n = iterator.next()
-        res = RiskItems("0",s._1+"_"+n.getKey,n.getValue.toString)::res
+        res = RiskItems("0", s._1 + "_" + n.getKey, n.getValue.toString) :: res
       }
       res
     })
@@ -314,6 +362,7 @@ class HiveService {
     val dc = dcs.getDc(dcName)
 
     var result = List[(String, String)]()
+
     def innerProcess[D <: JDBCConnectionDesc](connection: Connection, parentTask: HiveBatchedTask[D], d: D): Unit = {
       class PTask(funcName: String) extends HiveQueryTask[String, D] {
 
@@ -360,15 +409,15 @@ class HiveService {
 
       //prepare udfs .
       override def onConnection(connection: Connection): Unit = {
-        connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute()
-        connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute()
-        connection.prepareStatement("set hive.execution.engine=spark").execute();
+        //        connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute()
+        //        connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute()
+        //        connection.prepareStatement("set hive.execution.engine=spark").execute();
         for ((k, (func, clazz)) <- MaskRules.evaluateFunc) {
           val sql = s"CREATE TEMPORARY FUNCTION $func AS '$clazz'"
           connection.prepareStatement(sql).execute();
           println(s"$sql;")
         }
-        connection.commit()
+        //        connection.commit()
       }
     })
     Executor().executeTaskSync(task)
@@ -515,36 +564,62 @@ class HiveService {
     val tableTitleCollector = new JdbcResultCollector[(String, String)] {
       override def collect(resultSet: ResultSet): (String, String) = (resultSet.getString(1), resultSet.getString(2))
     }
+    val cNameCollector = new JdbcResultCollector[String] {
+      override def collect(resultSet: ResultSet): String = resultSet.getString(1)
+    }
+
     Some(
       HiveDcs.dcCotainer.getDc(dcName) match {
         case dc: HiveDc => {
-          val task = dc match {
+          val (task, cTask) = dc match {
             case dc: SimpleHiveDc => {
-              new HiveQueryTask[(String, String), SimpleHive2JdbcConnDesc] {
+              (new HiveQueryTask[(String, String), SimpleHive2JdbcConnDesc] {
                 override def collector(): JdbcResultCollector[(String, String)] = tableTitleCollector
 
                 override def sql(): String = s"desc $tableName"
 
                 override def connectionDesc(): SimpleHive2JdbcConnDesc = conSimpleDc2Desc(dc, schemaName)
-              }
+              },
+                new HiveQueryTask[String, SimpleHive2JdbcConnDesc] {
+                  override def collector(): JdbcResultCollector[String] = cNameCollector
+
+                  override def sql(): String = s"show columns in $tableName"
+
+                  override def connectionDesc(): SimpleHive2JdbcConnDesc = conSimpleDc2Desc(dc, schemaName)
+                }
+              )
             }
             case dc: KerberizedHiveDc => {
-              new HiveQueryTask[(String, String), KerberizedHive2JdbcConnDesc] {
-                override def collector(): JdbcResultCollector[(String, String)] = tableTitleCollector
+              (
+                new HiveQueryTask[(String, String), KerberizedHive2JdbcConnDesc] {
+                  override def collector(): JdbcResultCollector[(String, String)] = tableTitleCollector
 
-                override def sql(): String = s"desc $tableName"
+                  override def sql(): String = s"desc $tableName"
 
-                override def connectionDesc(): KerberizedHive2JdbcConnDesc = conKrbDc2Desc(dc, schemaName)
-              }
+                  override def connectionDesc(): KerberizedHive2JdbcConnDesc = conKrbDc2Desc(dc, schemaName)
+                },
+                new HiveQueryTask[String, KerberizedHive2JdbcConnDesc] {
+                  override def collector(): JdbcResultCollector[String] = cNameCollector
+
+                  override def sql(): String = s"show columns in $tableName"
+
+                  override def connectionDesc(): KerberizedHive2JdbcConnDesc = conKrbDc2Desc(dc, schemaName)
+                }
+              )
             }
           }
 
           Executor().executeTaskSync(task)
-          task.queryResults().asScala.toList
+          Executor().executeTaskSync(cTask)
+          var nameTypeMap = Map[String, String]();
+          task.queryResults().asScala.foreach(nameTypeMap += _)
+          cTask.queryResults().asScala.toList.map(item => (item, nameTypeMap(item)))
         }
         case _ => Nil
       }
     )
+
+
   }
 
   def getTableContents(dcName: String, schemaName: String, tableName: String, limit: Int): Option[List[List[String]]] = {
