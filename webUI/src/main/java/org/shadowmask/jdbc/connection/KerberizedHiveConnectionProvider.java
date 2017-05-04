@@ -20,6 +20,7 @@ package org.shadowmask.jdbc.connection;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +28,8 @@ import org.apache.log4j.Logger;
 import org.shadowmask.cache.PoolByKey;
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
 
-public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcConnDesc>
+public class
+KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcConnDesc>
     extends ConnectionProvider<DESC> {
 
   private static Logger logger =
@@ -43,6 +45,25 @@ public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcCo
       } catch (SQLException e) {
         logger.warn("get jdbc connection failed", e);
         throw new RuntimeException("get connection failed", e);
+      }
+    }
+
+    @Override
+    protected void touch(Connection connection) {
+      PreparedStatement stm = null;
+      try {
+        stm = connection.prepareStatement("SELECT  1");
+        stm.executeQuery();
+      } catch (Exception e) {
+        logger.info(e.getMessage(), e);
+      } finally {
+        if (stm != null) {
+          try {
+            stm.close();
+          } catch (Exception e) {
+            logger.info(e.getMessage(), e);
+          }
+        }
       }
     }
   };

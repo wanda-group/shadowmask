@@ -23,7 +23,7 @@ import org.scalatra.ScalatraServlet
 import org.scalatra.json.JacksonJsonSupport
 import org.scalatra.servlet.FileUploadSupport
 import org.scalatra.swagger._
-import org.shadowmask.web.common.user.{ConfiguredAuthProvider, User}
+import org.shadowmask.web.common.user.{ConfiguredAuthProvider, Token, User}
 import org.shadowmask.web.model._
 import org.shadowmask.web.service.HiveService
 
@@ -56,13 +56,12 @@ class AdminApi(implicit val swagger: Swagger) extends ScalatraServlet
     )
 
   get("/users", operation(adminUsersGetOperation)) {
-
-
     val authToken = request.getHeader("Authorization")
-
-    println("authToken: " + authToken)
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     val dcName = params.getAs[String]("dcName")
-    println("dcName: " + dcName)
     UserResult(
       Some(0),
       Some("ok"),
@@ -102,37 +101,17 @@ class AdminApi(implicit val swagger: Swagger) extends ScalatraServlet
     )
 
   post("/grant", operation(adminGrantPostOperation)) {
-
-
-    val authToken = request.getHeader("authToken")
-
-    println("authToken: " + authToken)
-
+    val authToken = request.getHeader("Authorization")
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
 
     val source = params.getAs[String]("source")
-
-    println("source: " + source)
-
-
     val datasetType = params.getAs[String]("datasetType")
-
-    println("datasetType: " + datasetType)
-
-
     val schema = params.getAs[String]("schema")
-
-    println("schema: " + schema)
-
-
     val name = params.getAs[String]("name")
-
-    println("name: " + name)
-
-
     val user = params.getAs[String]("user")
-
-    println("user: " + user)
-
     HiveService().grant(source.get, schema.get, name.get, user.get)
 
     SimpleResult(Some(0), Some("ok"));

@@ -18,16 +18,29 @@
 
 package org.shadowmask.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- *  tool of time
+ * tool of time
  */
 public class TimeUtil {
 
+
+  private static Logger logger = LoggerFactory.getLogger(TimeUtil.class);
+
   /**
-   *  now's millisecond
-   * @return
+   * now's millisecond
    */
   public static long nowMs() {
     return System.currentTimeMillis();
+  }
+
+  public static void pause(long ms) {
+    try {
+      Thread.sleep(ms);
+    } catch (InterruptedException e) {
+      logger.debug(e.getMessage(), e);
+    }
   }
 }
