@@ -24,7 +24,7 @@ import org.scalatra.ScalatraServlet
 import org.scalatra.json.JacksonJsonSupport
 import org.scalatra.servlet.FileUploadSupport
 import org.scalatra.swagger._
-import org.shadowmask.web.common.user.ConfiguredAuthProvider
+import org.shadowmask.web.common.user.{ConfiguredAuthProvider, Token}
 import org.shadowmask.web.model._
 import org.shadowmask.web.service.HiveService
 
@@ -58,7 +58,11 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   //some browses support get or post only .
   post("/dataset/delete", operation(warehouseDatasetDeleteOperation)) {
-    val authToken = request.getHeader("authToken")
+    val authToken = request.getHeader("Authorization")
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     val source = params.getAs[String]("source")
     val datasetType = params.getAs[String]("datasetType")
     val schema = params.getAs[String]("schema")
@@ -76,13 +80,13 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
     )
 
   post("/mask", operation(warehouseMaskPostOperation)) {
-
     val authToken = request.getHeader("Authorization")
-
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     val maskRule = parsedBody.extract[MaskRequest]
-
     HiveService().submitMaskTask(maskRule)
-
     SimpleResult(0, "ok");
   }
 
@@ -93,12 +97,11 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
     )
 
   get("/maskRules", operation(warehouseMaskRulesGetOperation)) {
-
-
-    val authToken = request.getHeader("authToken")
-
-    println("authToken: " + authToken)
-
+    val authToken = request.getHeader("Authorization")
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     MaskRulesResult(
       0,
       "ok",
@@ -119,6 +122,10 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   get("/privacyRisk", operation(warehousePrivacyRiskGetOperation)) {
     val authToken = request.getHeader("Authorization")
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     val source = params.getAs[String]("source")
     val datasetType = params.getAs[String]("datasetType")
     val schema = params.getAs[String]("schema")

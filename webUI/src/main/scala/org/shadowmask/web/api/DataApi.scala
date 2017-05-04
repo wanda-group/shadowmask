@@ -25,9 +25,10 @@ import org.scalatra.json.JacksonJsonSupport
 import org.scalatra.servlet.FileUploadSupport
 import org.scalatra.swagger._
 import org.shadowmask.model.data.TitleType
-import org.shadowmask.web.common.user.{ConfiguredAuthProvider, User}
+import org.shadowmask.web.common.user.{ConfiguredAuthProvider, Token, User}
 import org.shadowmask.web.model._
 import org.shadowmask.web.service.HiveService
+
 import scala.collection.JavaConverters._
 
 class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
@@ -55,11 +56,11 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
 
 
   get("/cloumnTypes", operation(dataCloumnTypesGetOperation)) {
-
-
     val authToken = request.getHeader("Authorization")
-
-    println("authToken: " + authToken)
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     CloumnTypeResult(
       Some(0),
       Some("ok"),
@@ -83,7 +84,11 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   get("/task", operation(dataTaskGetOperation)) {
 
-    val authorization = request.getHeader("authorization")
+    val authToken = request.getHeader("Authorization")
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     val taskType = params.getAs[String]("taskType")
     val fetchType = params.getAs[String]("fetchType")
     val pageNum = params.getAs[Int]("pageNum")
@@ -105,65 +110,13 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   get("/schema", operation(dataSchemaGetOperation)) {
 
-
-    val authToken = request.getHeader("authToken")
-
-    println("authToken: " + authToken)
-
-
+    val authToken = request.getHeader("Authorization")
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     val source = params.getAs[String]("source")
-
-    println("source: " + source)
-
     HiveService().getSchemaViewObject()
-
-
-    //
-    //    SchemaResult(
-    //      0,
-    //      "ok",
-    //      List(
-    //        SchemaObjectParent(
-    //          "HIVE",
-    //          List(
-    //            SchemaObject(
-    //              "schema1",
-    //              "schemaName",
-    //              List(
-    //                TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc")
-    //              )
-    //            ),
-    //            SchemaObject(
-    //              "schema1",
-    //              "schemaName",
-    //              List(
-    //                TableProp("table1", "tabledesc")
-    //              )
-    //            ),
-    //            SchemaObject(
-    //              "schema1",
-    //              "schemaName",
-    //              List(
-    //                TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc")
-    //              )
-    //            )
-    //          )
-    //        ),
-    //        SchemaObjectParent(
-    //          "SPARK",
-    //          List(
-    //            SchemaObject(
-    //              "schema1",
-    //              "schemaName",
-    //              List(
-    //                TableProp("table1", "tabledesc")
-    //              )
-    //            )
-    //          )
-    //        )
-    //
-    //      )
-    //    )
   }
 
 
@@ -181,58 +134,16 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
 
 
     val authToken = request.getHeader("Authorization")
-
-    println("authToken: " + authToken)
-
-
+    val u = getAuth().verify(Some(Token(authToken)))
+    if (u == None) {
+      halt(200, SimpleResult(Some(1), Some("authorization failed")), Map(), "");
+    }
     val source = params.getAs[String]("source")
-
-    println("source: " + source)
-
-
     val datasetType = params.getAs[String]("datasetType")
-
-    println("datasetType: " + datasetType)
-
-
     val schema = params.getAs[String]("schema")
-
-    println("schema: " + schema)
-
-
     val name = params.getAs[String]("name")
-
-    println("name: " + name)
-
-
     val rows = params.getAs[Int]("rows")
-
-    println("rows: " + rows)
-
     HiveService().getTableViewObject(source.get, schema.get, name.get, rows.get)
-    //    HiveService().getTableViewObject("dc1","tests","user_info",10)
-
-
-    //    TableResult(
-    //      0,
-    //      "ok",
-    //      TableContent(
-    //        List(
-    //          TableTitle("id", "ID", "ID", "#0000FF"),
-    //          TableTitle("username", "user's name ", "HALF_ID", "#0000FF"),
-    //          TableTitle("url", "some web site", "SENSITIVE", "#0000FF"),
-    //          TableTitle("addr", "address", "NONE_SENSITIVE", "#0000FF")
-    //        ),
-    //        List(
-    //          List("1", "tom", "http://ww.a.com", "qianmendajie"),
-    //          List("2", "tom", "http://ww.cca.com", "renminguangchang"),
-    //          List("3", "tom", "http://ww.dda.com", "东方明珠"),
-    //          List("6", "tom", "http://ww.aff.com", "united states"),
-    //          List("4", "tom", "http://ww.add.com", "japan"),
-    //          List("2", "tom", "http://ww.cca.com", "earth")
-    //        )
-    //      )
-    //    )
   }
 
 
