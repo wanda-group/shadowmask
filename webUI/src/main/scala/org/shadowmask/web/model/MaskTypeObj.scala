@@ -13,9 +13,6 @@
 
 package org.shadowmask.web.model
 
-case class MaskRuleParam (
-  name: Option[String],
-  desc: Option[String],
-  /* will be integer,string, boolean  etc */
-  dataType: Option[String]
+case class MaskTypeObj (
+  items: Option[List[MaskType]]
 )

@@ -18,7 +18,6 @@
 
 package org.shadowmask.web.api
 
-import com.google.gson.Gson
 import org.json4s._
 import org.scalatra.ScalatraServlet
 import org.scalatra.json.JacksonJsonSupport
@@ -105,7 +104,7 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
     MaskRulesResult(
       0,
       "ok",
-      MaskRules.rules
+      MaskTypeObj(MaskRules.rules)
     )
   }
 
@@ -134,7 +133,7 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
     PriRiskResult(
       0,
       "ok",
-      HiveService().getRiskViewObject(source.get, schema.get, name.get, columns.get.split("#"))
+      RiskItemsObj(HiveService().getRiskViewObject(source.get, schema.get, name.get, columns.get.split("#")))
     )
   }
 }

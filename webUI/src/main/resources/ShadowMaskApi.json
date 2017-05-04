@@ -502,6 +502,14 @@
           "type": "string"
         },
         "data": {
+          "$ref": "#/definitions/UserItemObj"
+        }
+      }
+    },
+    "UserItemObj": {
+      "type": "object",
+      "properties": {
+        "items": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/UserItem"
@@ -530,6 +538,14 @@
           "type": "string"
         },
         "data": {
+          "$ref": "#/definitions/SchemaObjectParentObject"
+        }
+      }
+    },
+    "SchemaObjectParentObject": {
+      "type": "object",
+      "properties": {
+        "items": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/SchemaObjectParent"
@@ -716,6 +732,14 @@
           "type": "string"
         },
         "data": {
+          "$ref": "#/definitions/MaskTypeObj"
+        }
+      }
+    },
+    "MaskTypeObj": {
+      "type": "object",
+      "properties": {
+        "items": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/MaskType"
@@ -863,6 +887,14 @@
           "type": "string"
         },
         "data": {
+          "$ref": "#/definitions/RiskItemsObj"
+        }
+      }
+    },
+    "RiskItemsObj": {
+      "type": "object",
+      "properties": {
+        "items": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/RiskItems"

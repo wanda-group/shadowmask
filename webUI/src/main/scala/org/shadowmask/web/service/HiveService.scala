@@ -51,20 +51,24 @@ class HiveService {
     try {
       val dcs = HiveDcs.dcCotainer
       SchemaResult(0, "ok", {
-        for (dcName <- dcs.getAllDcNames.asScala.toList) yield {
-          SchemaObjectParent(dcName, {
-            for (schema <- getAllSchemasByName(dcName)) yield {
-              SchemaObject(schema, schema, {
-                for (table <- getAllTables(dcName, schema).get._2) yield {
-                  TableProp(table, table)
+        SchemaObjectParentObject(
+          Some(
+            for (dcName <- dcs.getAllDcNames.asScala.toList) yield {
+              SchemaObjectParent(dcName, {
+                for (schema <- getAllSchemasByName(dcName)) yield {
+                  SchemaObject(schema, schema, {
+                    for (table <- getAllTables(dcName, schema).get._2) yield {
+                      TableProp(table, table)
+                    }
+                  })
                 }
               })
             }
-          })
-        }
+          )
+        )
       })
     } catch {
-      case e: Exception => SchemaResult(1, s"server internal error: ${e.getMessage}", Nil)
+      case e: Exception => SchemaResult(1, s"server internal error: ${e.getMessage}", SchemaObjectParentObject(Nil))
     }
 
   }
@@ -170,19 +174,19 @@ class HiveService {
 
   def grant(dcName: String, schema: String, tableName: String, role: String): Unit = {
     val dc = HiveDcs.dcCotainer.getDc(dcName);
-    val sqlStr = s"grant ALL on table $tableName to role $role"
+    val sqlStr = s"grant ALL on table $tableName to role $role;"
     println(sqlStr)
     val task = dc match {
       case dc: SimpleHiveDc =>
         new HiveExecutionTask[SimpleHive2JdbcConnDesc] {
           override def sql(): String = sqlStr
 
-          override def connectionDesc(): SimpleHive2JdbcConnDesc = conSimpleDc2Desc(dc,schema)
+          override def connectionDesc(): SimpleHive2JdbcConnDesc = conSimpleDc2Desc(dc, schema)
         }
       case dc: KerberizedHiveDc => new HiveExecutionTask[KerberizedHive2JdbcConnDesc] {
         override def sql(): String = sqlStr
 
-        override def connectionDesc(): KerberizedHive2JdbcConnDesc = conKrbDc2Desc(dc,schema)
+        override def connectionDesc(): KerberizedHive2JdbcConnDesc = conKrbDc2Desc(dc, schema)
       }
     }
     Executor().executeTaskSync(task)
