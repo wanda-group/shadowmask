@@ -66,7 +66,9 @@ class AdminApi(implicit val swagger: Swagger) extends ScalatraServlet
       Some(0),
       Some("ok"),
       Some(
-        HiveService().getAllRoles(dcName.get).map(name => UserItem(Some(name), Some(name))).toList
+        UserItemObj(
+          Some(HiveService().getAllRoles(dcName.get).map(name => UserItem(Some(name), Some(name))).toList)
+        )
       )
     )
   }
