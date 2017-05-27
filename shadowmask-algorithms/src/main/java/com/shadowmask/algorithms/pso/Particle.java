@@ -2,7 +2,13 @@ package com.shadowmask.algorithms.pso;
 
 public interface Particle<P extends Position, V extends Velocity, F extends Fitness, SWARM extends Swarm> {
 
-  void move(V v);
+  /**
+   * init operation .
+   */
+  public void init();
+
+
+  void move();
 
   /**
    * swarm
