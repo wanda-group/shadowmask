@@ -1,4 +1,4 @@
-package com.shadowmask.algorithms.datamask.ga;
+package com.shadowmask.algorithms.datamask;
 
 /**
  * Comparable domain  node like age , salary etc.

@@ -11,4 +11,11 @@ public class PSOTFitness extends Fitness<PSOTFitness> {
   @Override public int compareTo(PSOTFitness o) {
     return Double.valueOf(value).compareTo(Double.valueOf(o.value));
   }
+
+  public static PSOTFitness valueOf(double d){
+    PSOTFitness fitness = new PSOTFitness();
+    fitness.value = d;
+    return fitness;
+  }
+
 }

@@ -1,13 +1,11 @@
 package com.shadowmask.algorithms.pso;
 
 public class PSOTParticle
-    implements Particle<PSOTPosition, PSOTVelocity, PSOTFitness, PSOTSwarm> {
+    implements Particle<PSOTPosition, PSOTVelocity, PSOTFitness> {
 
   private double lbound = -10000D;
 
   private double hbound = 10000D;
-
-  private double randomSearchRate = 0.01;
 
   public PSOTPosition currentPosition;
 
@@ -42,9 +40,7 @@ public class PSOTParticle
     this.currentFitness.value = fitValue;
   }
 
-  @Override public void move() {
-    PSOTVelocity newVelocity = newVelocity();
-    // update position
+  @Override public void move(PSOTVelocity newVelocity) {
     this.currentPosition.xValue =
         this.currentPosition.xValue + newVelocity.velocity;
     if (currentPosition.xValue < lbound) {
@@ -52,64 +48,6 @@ public class PSOTParticle
     } else if (currentPosition.xValue > hbound) {
       currentPosition.xValue = hbound;
     }
-
-    double currentValue = PSOTTarget.func(currentPosition.xValue);
-
-    currentFitness.value = currentValue;
-    //update current fitness
-    if (currentFitness.betterThan(historyBestFitness())) {
-      // update best fitness
-      historyBestFitness.value = currentFitness.value;
-      // update best position
-      historyBestPosition.xValue = currentPosition.xValue;
-    }
-  }
-
-  @Override public PSOTVelocity newVelocity() {
-    double rate = Math.random();
-    if (rate < randomSearchRate) {
-      double value = Math.random() * (hbound - lbound);
-      PSOTVelocity v = new PSOTVelocity();
-      v.velocity = value;
-      return v;
-    }
-    PSOTSwarm swarm = this.swarmBelonged();
-    PSOTParticle worstPA = swarm.currentWorstParticle();
-    PSOTParticle bestPA = swarm.currentBestParticle();
-    PSOTParticle globalBestParticle = swarm.globalBestParticle();
-
-    double divider =
-        bestPA.currentFitness().value - worstPA.currentFitness.value;
-
-    double stayRate = 0;
-    if (divider * 1000000 != 0) {
-      stayRate = (this.currentFitness.value - worstPA.currentFitness().value)
-          / divider;
-    }
-    divider =
-        globalBestParticle.historyBestFitness.value - this.currentFitness.value;
-
-
-    double selfLearnRate = 1;
-
-    if (divider * 1000000 != 0) {
-      selfLearnRate =
-          (this.historyBestFitness().value - this.currentFitness.value) / divider;
-    }
-    double learnOther = 1 - selfLearnRate;
-    double v =
-        this.currentV.velocity * stayRate + selfLearnRate * Math.random() * (
-            this.historyBestPosition.xValue - this.currentPosition.xValue)
-            + learnOther * Math.random() * (
-            swarm.globalBestParticle().historyBestPosition.xValue
-                - this.currentPosition.xValue);
-    PSOTVelocity vv = new PSOTVelocity();
-    vv.velocity = v;
-    return vv;
-  }
-
-  @Override public PSOTSwarm swarmBelonged() {
-    return swarm;
   }
 
   @Override public PSOTPosition currentPosition() {
@@ -130,5 +68,11 @@ public class PSOTParticle
 
   @Override public PSOTFitness historyBestFitness() {
     return historyBestFitness;
+  }
+
+  @Override public void getBetter(PSOTPosition betterPosition,
+      PSOTFitness betterFitness) {
+    this.historyBestFitness.value = betterFitness.value;
+    this.historyBestPosition.xValue = betterPosition.xValue;
   }
 }

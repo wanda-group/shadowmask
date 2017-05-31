@@ -1,25 +1,21 @@
 package com.shadowmask.algorithms.pso;
 
-public interface Particle<P extends Position, V extends Velocity, F extends Fitness, SWARM extends Swarm> {
+public interface Particle<P extends Position, V extends Velocity, F extends Fitness> {
 
   /**
    * init operation .
    */
-  public void init();
-
-
-  void move();
+  void init();
 
   /**
-   * swarm
+   * move to a new position
    */
-  SWARM swarmBelonged();
+  void move(V v);
 
   /**
-   * calculate a new velocity.
-   * @return
+   * current velocity
    */
-  V newVelocity();
+  V currentVelocity();
 
   /**
    * current position
@@ -32,11 +28,6 @@ public interface Particle<P extends Position, V extends Velocity, F extends Fitn
   F currentFitness();
 
   /**
-   * current velocity
-   */
-  V currentVelocity();
-
-  /**
    * best position since beginning.
    */
   P historyBestPosition();
@@ -45,5 +36,10 @@ public interface Particle<P extends Position, V extends Velocity, F extends Fitn
    * best fitness since beginning.
    */
   F historyBestFitness();
+
+  /**
+   * get better
+   */
+  void getBetter(P betterPosition, F betterFitness);
 
 }

@@ -1,8 +1,9 @@
 package com.shadowmask.algorithms.pso;
 
 import java.util.List;
+import java.util.Map;
 
-public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Position, S extends Swarm, PA extends Particle<P, V, F, S>> {
+public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Position, PA extends Particle<P, V, F>> {
 
   private PA globalBest;
 
@@ -10,10 +11,36 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
 
   private PA currentWorst;
 
+  Map<PA, F> fitnessMap = null;
+
+  Map<PA, V> newVelocities = null;
+
   /**
    * all particles
    */
   public abstract List<PA> particles();
+
+  /**
+   * calculate current fitness for all particles
+   */
+  public abstract Map<PA, F> calculateFitness();
+
+
+  /**
+   * calculate current fitness for all particles
+   */
+  public Map<PA, F> currentFitness(){
+    return fitnessMap;
+  }
+
+  /**
+   * calculate current velocity for all particles
+   */
+  public abstract Map<PA, V> calculateNewVelocities();
+
+  public Map<PA, V> velocityMap(){
+    return newVelocities;
+  }
 
   /**
    * best particle till now .
@@ -67,11 +94,17 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
   public void optimize() {
     for (int i = 0; i < maxSteps(); ++i) {
       List<PA> particles = particles();
+      Map<PA, F> fitnessMap = calculateFitness();
       updateCurrentBestParticle(null);
       updateCurrentWorstParticle(null);
       // update swarm information
       particles.forEach(pa -> {
-        F f = pa.currentFitness();
+        F f = fitnessMap.get(pa);
+
+        if (pa.historyBestPosition() == null || pa.historyBestFitness() == null
+            || f.betterThan(pa.historyBestFitness())) {
+          pa.getBetter(pa.currentPosition(), f);
+        }
         // update global best
         if (globalBestParticle() == null || f
             .betterThan(globalBestParticle().historyBestFitness())) {
@@ -87,11 +120,14 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
             .currentFitness().betterThan(f)) {
           updateCurrentWorstParticle(pa);
         }
+
       });
+
+      Map<PA, V> velocities = calculateNewVelocities();
 
       // move to new position
       particles.forEach(pa -> {
-        pa.move();
+        pa.move(velocities.get(pa));
       });
     }
   }
