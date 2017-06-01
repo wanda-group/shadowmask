@@ -40,7 +40,12 @@
       <artifactId>commons-validator</artifactId>
       <version>1.4.0</version>
     </dependency>
-
+    <!-- https://mvnrepository.com/artifact/org.javatuples/javatuples -->
+    <dependency>
+      <groupId>org.javatuples</groupId>
+      <artifactId>javatuples</artifactId>
+      <version>1.2</version>
+    </dependency>
   </dependencies>
 
 </project>
