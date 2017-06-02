@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
-import org.shadowmask.core.domain.DomainTreeGeneralizer;
+import org.shadowmask.core.mask.rules.generalizer.impl.DomainTreeGeneralizer;
 
 public class TestDomainTreeGeneralizer
     extends DomainTreeGeneralizer<String, String, TestTreeNode> {

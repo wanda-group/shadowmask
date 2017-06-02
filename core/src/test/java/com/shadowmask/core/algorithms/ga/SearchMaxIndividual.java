@@ -41,11 +41,11 @@ public class SearchMaxIndividual extends
 
     SearchMaxIndividual that = (SearchMaxIndividual) o;
 
-    return chromosome != null ? chromosome.getGene().binStr.equals(that.chromosome.getGene().binStr) : that.chromosome == null;
+    return chromosome != null ? chromosome.getGene().xValue.equals(that.chromosome.getGene().xValue) : that.chromosome == null;
   }
 
   @Override
   public int hashCode() {
-    return chromosome != null ? chromosome.getGene().binStr.hashCode() : 0;
+    return chromosome != null ? chromosome.getGene().xValue.hashCode() : 0;
   }
 }

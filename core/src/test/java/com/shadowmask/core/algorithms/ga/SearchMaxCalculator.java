@@ -1,13 +1,23 @@
 package com.shadowmask.core.algorithms.ga;
 
+import com.shadowmask.core.algorithms.pso.PSOTTarget;
 import java.math.BigDecimal;
-import java.util.function.Function;
 import org.shadowmask.core.algorithms.ga.FitnessCalculator;
 
 public class SearchMaxCalculator implements
     FitnessCalculator<SearchMaxFitness, SearchMaxIndividual> {
 
-  public Function<Integer, BigDecimal> targetFunc = i -> BigDecimal.ZERO.subtract(BigDecimal.valueOf(i-10000).multiply(BigDecimal.valueOf(i-10000)));
+  static interface Function<T,R>{
+    R apply(T t);
+  }
+
+
+  public Function<BigDecimal, Double> targetFunc = new Function<BigDecimal,Double>() {
+    @Override public Double apply(BigDecimal i) {
+      Double d  = i.doubleValue();
+      return PSOTTarget.func(d);
+    }
+  };
 //etFunc = i -> 7.8 * Math.pow(i, 7) + 2 * Math.pow(1, 4)
 //      + 2 * Math.pow(1, 3) + 10;
 
