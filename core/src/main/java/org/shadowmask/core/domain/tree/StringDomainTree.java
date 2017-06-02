@@ -1,8 +1,12 @@
-package org.shadowmask.core.domain;
+package org.shadowmask.core.domain.tree;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.shadowmask.core.domain.StringDomainTree.StringDomainTreeNode;
+import java.util.HashMap;
+import java.util.Map;
+import org.shadowmask.core.domain.DomainTree;
+import org.shadowmask.core.domain.DomainTreeNode;
+import org.shadowmask.core.domain.tree.StringDomainTree.StringDomainTreeNode;
 import org.shadowmask.core.util.JsonUtil;
 
 /**
@@ -18,6 +22,11 @@ public class StringDomainTree extends DomainTree<StringDomainTreeNode> {
     super();
   }
 
+  /**
+   * hash map index
+   */
+  private Map<String, StringDomainTreeNode> index;
+
   @Override protected StringDomainTreeNode constructTNode(String jsonStr) {
     Gson gson = JsonUtil.newGsonInstance();
     JsonObject object = gson.fromJson(jsonStr, JsonObject.class);
@@ -25,6 +34,17 @@ public class StringDomainTree extends DomainTree<StringDomainTreeNode> {
     StringDomainTreeNode node = new StringDomainTreeNode();
     node.setName(text);
     return node;
+  }
+
+  @Override public void onTreeBuilt() {
+    index = new HashMap<>();
+    for (StringDomainTreeNode node : this.getLeaves()) {
+      index.put(node.getName(), node);
+    }
+  }
+
+  public StringDomainTreeNode fixALeaf(String name) {
+    return this.index.get(name);
   }
 
   static class StringDomainTreeNode

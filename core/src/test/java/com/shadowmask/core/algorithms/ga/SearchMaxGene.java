@@ -6,46 +6,26 @@ import org.shadowmask.core.algorithms.ga.Gene;
 
 public class SearchMaxGene implements Gene<SearchMaxGene> {
 
-  public String binStr;
+  public Double xValue;
 
-  public SearchMaxGene(String binStr) {
+  private Double scale = 10D;
 
-    int dLen = 30 - binStr.length();
-    StringBuilder prefix = new StringBuilder();
-    for (int i = 0; i < dLen ; i++) {
-      prefix.append("0");
-    }
-
-    this.binStr = prefix.toString()+binStr;
+  public SearchMaxGene(Double xValue) {
+    this.xValue = xValue;
   }
 
-  @Override
-  public Pair<SearchMaxGene, SearchMaxGene> cross(SearchMaxGene that) {
-    int index = new Random().nextInt(this.binStr.length());
-    String pre1 = this.binStr.substring(0, index);
-    String post1 = this.binStr.substring(index);
-    String pre2 = that.binStr.substring(0, index);
-    String post2 = that.binStr.substring(index);
-    String gene1 = pre1 + post2;
-    String gene2 = pre2 + post1;
-    return new Pair<>(new SearchMaxGene(gene1), new SearchMaxGene(gene2));
+  @Override public Pair<SearchMaxGene, SearchMaxGene> cross(
+      SearchMaxGene that) {
+    Double step = Math.abs(this.xValue - that.xValue) * Math.random();
+    Pair<Double, Double> minMax = this.xValue < that.xValue
+        ? new Pair<>(this.xValue, that.xValue)
+        : new Pair<>(that.xValue, this.xValue);
+    Double g1 = minMax.getValue0() + step;
+    Double g2 = minMax.getValue1() - step;
+    return new Pair<>(new SearchMaxGene(g1),new SearchMaxGene(g2));
   }
 
-  @Override
-  public SearchMaxGene mutate() {
-
-    int mutateNum = new Random().nextInt(binStr.length());
-    StringBuilder builder = new StringBuilder(binStr);
-    for(int i = 0 ; i< mutateNum; ++ i){
-      int index = new Random().nextInt(binStr.length());
-      char g = binStr.charAt(index);
-      if ('0' == g) {
-        builder.setCharAt(index, '1');
-      } else {
-        builder.setCharAt(index, '0');
-      }
-    }
-
-    return new SearchMaxGene(builder.toString());
+  @Override public SearchMaxGene mutate() {
+    return new SearchMaxGene(Math.random()*(SearchMaxBounds.hBound-SearchMaxBounds.lBound)+SearchMaxBounds.lBound);
   }
 }

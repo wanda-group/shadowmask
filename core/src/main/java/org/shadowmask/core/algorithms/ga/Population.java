@@ -1,71 +1,82 @@
 package org.shadowmask.core.algorithms.ga;
 
-import org.shadowmask.core.algorithms.ga.functions.CrossFunction;
-import org.shadowmask.core.algorithms.ga.functions.MutationFunction;
-import org.shadowmask.core.algorithms.ga.functions.SelectFunction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.javatuples.Pair;
+import org.shadowmask.core.algorithms.ga.functions.CrossFunction;
+import org.shadowmask.core.algorithms.ga.functions.MutationFunction;
+import org.shadowmask.core.algorithms.ga.functions.SelectFunction;
 
-public abstract class Population<
-    IND extends Individual,
-    CROSS extends CrossFunction<IND>,
-    MUTATE extends MutationFunction<IND>,
-    FIT extends Fitness,
-    SELECT extends SelectFunction<IND, FIT>,
-    FC extends FitnessCalculator<FIT, IND>
-    > {
+public abstract class Population<IND extends Individual, CROSS extends CrossFunction<IND>, MUTATE extends MutationFunction<IND>, FIT extends Fitness, SELECT extends SelectFunction<IND, FIT>, FC extends FitnessCalculator<FIT, IND>> {
 
+  protected List<IND> individuals;
 
-  abstract long populationSize();
+  protected List<IND> nextIndividuals;
 
-  abstract double mutationRate();
+  // best individual till now
+  private IND bestIndividual;
+  // best fitness till now
+  private FIT bestFitness;
 
-  abstract double crossRate();
+  protected abstract long populationSize();
 
-  abstract long maxSteps();
+  protected abstract double mutationRate();
 
-  abstract List<IND> individuals();
+  protected abstract double crossRate();
 
-  abstract CROSS crossFunction();
+  protected abstract long maxSteps();
 
-  abstract MUTATE mutationFunction();
+  public List<IND> individuals() {
+    return individuals;
+  }
 
-  abstract SELECT selectFunction();
+  protected abstract CROSS crossFunction();
 
-  abstract List<FIT> evaluateFitness(Map<IND, FIT> all);
+  protected abstract MUTATE mutationFunction();
 
-  abstract FC fitnessCalculator();
+  protected abstract SELECT selectFunction();
 
-  abstract void found(List<FIT> fits);
+  protected abstract IND cloneIndividual(IND ind);
 
-  abstract void collect(IND individual);
+  protected abstract FIT cloneFitness(FIT fitness);
+
+  protected abstract void foundNewSolution(IND ind, FIT fitness);
 
   /**
    * maybe most calculation expensive method
    */
-  abstract Map<IND, FIT> calculateFitness(List<IND> individuals);
+  protected abstract Map<IND, FIT> calculateFitness(List<IND> individuals);
 
-  abstract void init();
+  protected void init() {
+    this.individuals = new ArrayList<>();
+    nextIndividuals = new ArrayList<>();
+  }
 
-  abstract void searchedOnce(long i);
 
-  abstract void finished();
+  protected abstract void finished();
 
   public void evolve() {
-    init();
+    this.init();
     for (long i = 0; i < maxSteps(); ++i) {
       Map<IND, FIT> fits = calculateFitness(individuals());
-      List<FIT> fitList = evaluateFitness(fits);
-      if (fitList != null && fitList.size() > 0) {
-        found(fitList);
-        break;
+      for (IND ind : fits.keySet()) {
+        if (this.bestIndividual == null) {
+          this.bestIndividual = ind;
+          this.bestFitness = fits.get(ind);
+        } else {
+          if (fits.get(ind).betterThan(this.bestFitness)) {
+            this.bestFitness = cloneFitness(fits.get(ind));
+            this.bestIndividual = cloneIndividual(ind);
+            foundNewSolution(this.bestIndividual, this.bestFitness);
+          }
+        }
       }
       // select
-      List<IND> selectedInds = selectFunction().select(individuals(), fits, populationSize());
+      List<IND> selectedInds =
+          selectFunction().select(individuals(), fits, populationSize());
       // cross
       List<Pair<IND, IND>> pairs = generateCrossPairs(selectedInds);
       for (Pair<IND, IND> pair : pairs) {
@@ -79,22 +90,23 @@ public abstract class Population<
         }
         Double mutateR = Math.random();
         if (mutateR < mutationRate()) {
-          newPair = new Pair<IND, IND>(mutationFunction().mutate(newPair.getValue0()),
-              newPair.getValue1());
+          newPair =
+              new Pair<IND, IND>(mutationFunction().mutate(newPair.getValue0()),
+                  newPair.getValue1());
         }
         mutateR = Math.random();
         if (mutateR < mutationRate()) {
           newPair = new Pair<IND, IND>(newPair.getValue0(),
               mutationFunction().mutate((newPair.getValue1())));
         }
-        collect(newPair.getValue0());
-        collect(newPair.getValue1());
+        nextIndividuals.add(newPair.getValue0());
+        nextIndividuals.add(newPair.getValue1());
       }
-      searchedOnce(i);
+      individuals = nextIndividuals;
+      nextIndividuals = new ArrayList<>();
     }
     finished();
   }
-
 
   /**
    * maybe change the population order , no affection however
@@ -108,6 +120,5 @@ public abstract class Population<
     }
     return pairs;
   }
-
 
 }

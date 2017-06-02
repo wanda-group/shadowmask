@@ -11,9 +11,9 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
 
   private PA currentWorst;
 
-  Map<PA, F> fitnessMap = null;
+  protected Map<PA, F> fitnessMap = null;
 
-  Map<PA, V> newVelocities = null;
+  protected Map<PA, V> newVelocities = null;
 
   /**
    * all particles

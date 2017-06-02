@@ -92,16 +92,10 @@ public class PSOTSwarm
   @Override public void updateGlobalBestParticle(PSOTParticle p) {
 
     super.updateGlobalBestParticle(p);
-    double f = particles().stream().map(pa->pa.currentPosition().xValue).reduce((p1,p2)->{
-      return p1+p2;
-    }).get();
-
-
-
     if (p != null) {
       System.out.println(
           p.historyBestPosition.xValue + "\t" + p.historyBestFitness.value
-              + "\t" + p.hashCode()+"\t"+f/particleSize());
+              + "\t" + p.hashCode()+"\t");
     }
   }
 }

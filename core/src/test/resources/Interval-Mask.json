@@ -1,0 +1,65 @@
+{
+	"comparable": "false",
+	"type": "string",
+	"version": "1.0",
+	"root": {
+		"text": "*",
+		"children": [
+			{
+				"text": "low-normal",
+				"children": [
+					{
+						"text": "low",
+						"children": [
+							{
+								"text": "very-low",
+								"lBound": 0,
+								"hBound": 18
+							},
+							{
+								"text": "low",
+								"lBound": 18,
+								"hBound": 26
+							}
+						]
+					},
+					{
+						"text": "normal",
+						"children": [
+							{
+								"text": "normal",
+								"lBound": 26,
+								"hBound": 34
+							},
+							{
+								"text": "borderline high",
+								"lBound": 34,
+								"hBound": 41
+							}
+						]
+					}
+				]
+			},
+			{
+				"text": "high",
+				"children": [
+					{
+						"text": "high",
+						"children": [
+							{
+								"text": "high",
+								"lBound": 41,
+								"hBound": 49
+							},
+							{
+								"text": "very high",
+								"lBound": 49,
+								"hBound": 100
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,23 +1,24 @@
 package com.shadowmask.core.algorithms.ga;
 
+import java.math.BigDecimal;
 import java.util.Random;
 import org.javatuples.Pair;
 import org.shadowmask.core.algorithms.ga.Chromosome;
 
 public class SearchMaxChromosome implements Chromosome<SearchMaxChromosome> {
 
-  public int xValue;
+  public BigDecimal xValue;
 
   public SearchMaxGeneCoder coder  = new SearchMaxGeneCoder();
 
   public SearchMaxGene gene;
 
-  public SearchMaxChromosome(int xValue) {
+  public SearchMaxChromosome(BigDecimal xValue) {
     this.xValue = xValue;
   }
 
   public SearchMaxChromosome() {
-    this.xValue = new Random().nextInt(100);
+    this.xValue = BigDecimal.valueOf(Math.random()*(SearchMaxBounds.hBound-SearchMaxBounds.lBound)+SearchMaxBounds.lBound);
   }
 
   @Override

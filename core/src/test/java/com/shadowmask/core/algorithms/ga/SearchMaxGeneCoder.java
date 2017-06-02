@@ -1,5 +1,6 @@
 package com.shadowmask.core.algorithms.ga;
 
+import java.math.BigDecimal;
 import org.shadowmask.core.algorithms.ga.GeneCoder;
 
 public class SearchMaxGeneCoder implements
@@ -7,11 +8,11 @@ public class SearchMaxGeneCoder implements
 
   @Override
   public SearchMaxGene encode(SearchMaxChromosome chromosome) {
-    return new SearchMaxGene(Integer.toBinaryString(chromosome.xValue));
+    return new SearchMaxGene(chromosome.xValue.doubleValue());
   }
 
   @Override
   public SearchMaxChromosome decode(SearchMaxGene gene) {
-    return new SearchMaxChromosome(Integer.parseUnsignedInt(gene.binStr,2));
+    return new SearchMaxChromosome(BigDecimal.valueOf(gene.xValue));
   }
 }

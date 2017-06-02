@@ -4,8 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.shadowmask.core.util.JsonUtil;
+import org.yaml.snakeyaml.Yaml;
 
 public abstract class DomainTree<TNODE extends DomainTreeNode> {
   private int height;
@@ -22,40 +25,20 @@ public abstract class DomainTree<TNODE extends DomainTreeNode> {
 
   protected abstract TNODE constructTNode(String jsonStr);
 
-  /**
-   * construct domain tree from json string
-   *
-   * @param jsonStr: json string:
-   */
-  /*
-    {
-      comparable: true/false,
-      type: integer/float/string
-      version:"1.0",
-      root:{
-        text: "some name",
-        lbound: 0, //when comparable is true.
-        hbound: 30, //when comparable is true.
-        children:[
-          {
-            text:"some text",
-            lbound: 0,
-            hbound: 10
-            children:[
-              {
-                ...
-              }
-            ]
-          },{
+  public void constructFromYaml(String yamlStr) {
+    Yaml yaml = new Yaml();
+    Gson gson = JsonUtil.newGsonInstance();
+    String json = gson.toJson(yaml.load(yamlStr));
+    this.constructFromJson(json);
+  }
 
-          },
-          ...
-          ,{
-          }
-        ]
-      }
-    }
-     */
+  public void constructFromYamlInputStream(InputStream inputStream) {
+    Yaml yaml = new Yaml();
+    Gson gson = JsonUtil.newGsonInstance();
+    String json = gson.toJson(yaml.load(inputStream));
+    this.constructFromJson(json);
+  }
+
   public void constructFromJson(String jsonStr) {
     Gson gson = new Gson();
     JsonObject object = gson.fromJson(jsonStr, JsonObject.class);
@@ -66,6 +49,7 @@ public abstract class DomainTree<TNODE extends DomainTreeNode> {
     TNODE root = constructTree(object.get("root").toString(), leaves, depth);
     this.root = root;
     this.leaves = leaves;
+    onTreeBuilt();
   }
 
   private TNODE constructTree(String jsonStr, List<TNODE> leaves, int depth) {
@@ -90,6 +74,7 @@ public abstract class DomainTree<TNODE extends DomainTreeNode> {
       childrenList.add(child);
     }
     parent.setChildren(childrenList);
+    onRelationBuilt(parent, childrenList);
     return parent;
   }
 
@@ -104,4 +89,13 @@ public abstract class DomainTree<TNODE extends DomainTreeNode> {
   public String getVersion() {
     return version;
   }
+
+  public void onRelationBuilt(TNODE parent, List<TNODE> children) {
+
+  }
+
+  public void onTreeBuilt(){
+
+  }
+
 }
