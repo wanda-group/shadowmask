@@ -1,5 +1,6 @@
 package com.shadowmask.core.algorithms.ga;
 
+import com.google.gson.Gson;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.javatuples.Pair;
 import org.shadowmask.core.algorithms.ga.Population;
+import org.shadowmask.core.util.JsonUtil;
 
 public class SearchMaxPopulation extends Population<
     SearchMaxIndividual,
@@ -17,9 +19,6 @@ public class SearchMaxPopulation extends Population<
     SearchMaxCalculator
     > {
 
-  List<SearchMaxIndividual> individuals = null;
-
-  List<SearchMaxIndividual> newIndividuals = null;
 
   SearchMaxCrossFunction searchMaxCrossFunction = new SearchMaxCrossFunction();
 
@@ -30,87 +29,53 @@ public class SearchMaxPopulation extends Population<
 
   SearchMaxCalculator searchMaxCalculator = new SearchMaxCalculator();
 
-  @Override
-  long populationSize() {
-    return 50;
+  @Override protected long populationSize() {
+    return 200;
   }
 
-  @Override
-  double mutationRate() {
+  @Override protected double mutationRate() {
     return 0.01;
   }
 
-  @Override
-  double crossRate() {
-    return 0.4;
+  @Override protected double crossRate() {
+    return 0.7;
   }
 
-  @Override
-  long maxSteps() {
-    return 100000;
+  @Override protected long maxSteps() {
+    return 1000;
   }
 
-  @Override
-  List<SearchMaxIndividual> individuals() {
-    return individuals;
-  }
 
-  @Override
-  SearchMaxCrossFunction crossFunction() {
+  @Override protected SearchMaxCrossFunction crossFunction() {
     return searchMaxCrossFunction;
   }
 
-  @Override
-  MutationFunction mutationFunction() {
+  @Override protected MutationFunction mutationFunction() {
     return mutationFunction;
   }
 
-  @Override
-  SearchMaxSelectFunction selectFunction() {
+  @Override protected SearchMaxSelectFunction selectFunction() {
     return searchMaxSelectFunction;
   }
 
-  @Override
-  List<SearchMaxFitness> evaluateFitness(Map<SearchMaxIndividual, SearchMaxFitness> all) {
-    final BigDecimal[] d = {null};
-    final String[] g = {null};
-    all.keySet().stream().map(ind -> new Pair<>(ind.chromosome.getGene(), all.get(ind).value))
-        .forEach(kv -> {
-          if (d[0] == null) {
-            d[0] = kv.getValue1();
-            g[0] = kv.getValue0().binStr;
-          } else if (d[0].compareTo(kv.getValue1()) < 0) {
-            d[0] = kv.getValue1();
-            g[0] = kv.getValue0().binStr;
-          }
-        });
-    System.out.print(g[0] + "\t" + Integer.parseInt(g[0], 2) + "\t" + d[0]);
-    all.keySet().stream().forEach(k -> {
-      System.out.print("\t" + k.chromosome.xValue);
-    });
-    System.out.println();
-
-    return null;
+  @Override protected SearchMaxIndividual cloneIndividual(
+      SearchMaxIndividual searchMaxIndividual) {
+    Gson gson = JsonUtil.newGsonInstance();
+    SearchMaxIndividual  individual = gson.fromJson(gson.toJson(searchMaxIndividual),SearchMaxIndividual.class);
+    return individual;
   }
 
-
-  @Override
-  SearchMaxCalculator fitnessCalculator() {
-    return searchMaxCalculator;
+  @Override protected SearchMaxFitness cloneFitness(SearchMaxFitness fitness) {
+    Gson gson = JsonUtil.newGsonInstance();
+    return gson.fromJson(gson.toJson(fitness),SearchMaxFitness.class);
   }
 
-  @Override
-  void found(List<SearchMaxFitness> searchMaxFitnesses) {
-    System.out.println(searchMaxFitnesses);
+  @Override protected void foundNewSolution(
+      SearchMaxIndividual searchMaxIndividual, SearchMaxFitness fitness) {
+    System.out.println(searchMaxIndividual.chromosome.xValue+"\t"+fitness.value);
   }
 
-  @Override
-  void collect(SearchMaxIndividual individual) {
-    newIndividuals.add(individual);
-  }
-
-  @Override
-  Map<SearchMaxIndividual, SearchMaxFitness> calculateFitness(
+  @Override protected Map<SearchMaxIndividual, SearchMaxFitness> calculateFitness(
       List<SearchMaxIndividual> individuals) {
     Map<SearchMaxIndividual, SearchMaxFitness> fitnessMap = new HashMap<>();
     for (SearchMaxIndividual individual : individuals) {
@@ -119,23 +84,15 @@ public class SearchMaxPopulation extends Population<
     return fitnessMap;
   }
 
-  @Override
-  void init() {
+  @Override protected void init() {
     this.individuals = new ArrayList<>();
     for (int i = 0; i < this.populationSize(); ++i) {
       this.individuals.add(new SearchMaxIndividual(new SearchMaxChromosome()));
     }
-    this.newIndividuals = new ArrayList<>();
+    this.nextIndividuals = new ArrayList<>();
   }
 
-  @Override
-  void searchedOnce(long i) {
-    individuals = newIndividuals;
-    this.newIndividuals = new ArrayList<>();
-  }
-
-  @Override
-  void finished() {
+  @Override protected void finished() {
 
   }
 }
