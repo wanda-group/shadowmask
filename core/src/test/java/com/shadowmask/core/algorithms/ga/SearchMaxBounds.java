@@ -18,7 +18,7 @@
 package com.shadowmask.core.algorithms.ga;
 
 public class SearchMaxBounds {
-  public static final Double lBound = -10000D;
+  public static final Double lBound = -250000D;
 
-  public static final Double hBound = 10000D;
+  public static final Double hBound = 250000D;
 }

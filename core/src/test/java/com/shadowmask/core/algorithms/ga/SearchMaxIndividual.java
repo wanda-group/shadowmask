@@ -30,6 +30,10 @@ public class SearchMaxIndividual extends
     return new SearchMaxIndividual(l1.get(0));
   }
 
+  @Override public String toString() {
+    return this.chromosome.xValue+"";
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
