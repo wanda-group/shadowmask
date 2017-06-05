@@ -1,6 +1,5 @@
 package com.shadowmask.core.algorithms.ga;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +14,7 @@ public class SearchMaxSelectFunction
       Map<SearchMaxIndividual, SearchMaxFitness> fits, long selectNum) {
 
     Double min = null;
+    Double max = null;
     Double total = null;
 
     for (SearchMaxFitness fit : fits.values()) {
@@ -25,13 +25,21 @@ public class SearchMaxSelectFunction
           min = fit.value;
         }
       }
+      if (max == null) {
+        max = fit.value;
+      } else {
+        if (fit.value > max) {
+          max = fit.value;
+        }
+      }
+
     }
 
     for (SearchMaxFitness fit : fits.values()) {
       if (total == null) {
-        total = fit.value-min;
+        total = max - fit.value;
       } else {
-        total = total + (fit.value-min);
+        total = total + (max - fit.value);
       }
     }
 
@@ -40,8 +48,8 @@ public class SearchMaxSelectFunction
     }
     List<SearchMaxIndividual> selectTab = new ArrayList<>();
     for (SearchMaxIndividual individual : ind) {
-      Double prop = (fits.get(individual).value - min)/total;
-      Long num = Double.valueOf(selectNum*prop+1).longValue();
+      Double prop = (max - fits.get(individual).value) / total;
+      Long num = Double.valueOf(selectNum * prop + 1).longValue();
       if (num == 0L) {
         num = 0L;
       } else {

@@ -18,7 +18,7 @@ public class SearchMaxChromosome implements Chromosome<SearchMaxChromosome> {
   }
 
   public SearchMaxChromosome() {
-    this.xValue = BigDecimal.valueOf(Math.random()*(SearchMaxBounds.hBound-SearchMaxBounds.lBound));
+    this.xValue = BigDecimal.valueOf(Math.random()*(SearchMaxBounds.hBound-SearchMaxBounds.lBound)+SearchMaxBounds.lBound);
   }
 
   @Override

@@ -10,7 +10,7 @@ public class PSOTTarget {
 //    }
 
 //    return -Math.sin(xValue-999);
-    return -Math.sin(xValue-999)*10/(xValue-999);
+    return -Math.sin(xValue/100)*1000/(xValue/100);
 
   }
 }

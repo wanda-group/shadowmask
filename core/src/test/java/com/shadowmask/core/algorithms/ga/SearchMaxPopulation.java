@@ -30,7 +30,7 @@ public class SearchMaxPopulation extends Population<
   SearchMaxCalculator searchMaxCalculator = new SearchMaxCalculator();
 
   @Override protected long populationSize() {
-    return 200;
+    return 50;
   }
 
   @Override protected double mutationRate() {

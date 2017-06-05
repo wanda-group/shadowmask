@@ -26,6 +26,6 @@ public class SearchMaxGene implements Gene<SearchMaxGene> {
   }
 
   @Override public SearchMaxGene mutate() {
-    return new SearchMaxGene(Math.random()*(SearchMaxBounds.hBound-SearchMaxBounds.lBound));
+    return new SearchMaxGene(Math.random()*(SearchMaxBounds.hBound-SearchMaxBounds.lBound)+SearchMaxBounds.lBound);
   }
 }
