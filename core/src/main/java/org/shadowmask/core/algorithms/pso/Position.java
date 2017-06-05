@@ -1,4 +1,6 @@
 package org.shadowmask.core.algorithms.pso;
 
-public interface Position {
+import java.io.Serializable;
+
+public interface Position extends Serializable{
 }
