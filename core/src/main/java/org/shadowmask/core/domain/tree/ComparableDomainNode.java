@@ -1,4 +1,4 @@
-package org.shadowmask.core.domain;
+package org.shadowmask.core.domain.tree;
 
 /**
  * Comparable domain  node like age , salary etc.

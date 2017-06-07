@@ -15,33 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.autosearch.pso;
+package com.shadowmask.core.util;
 
-import org.shadowmask.core.algorithms.pso.Position;
-import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
+import org.shadowmask.core.util.ClassUtil;
 
-/**
- * abstract of position in pso ,actually collection of generalizers
- */
-public class MkPosition<GE extends GeneralizerActor> implements Position {
+public class ClassUtilTest {
 
-  protected GE[] generalizerActors;
-
-  public MkPosition(int size) {
-  }
-
-  public MkPosition() {
-  }
-
-  public void init() {
-
-  }
-
-  public GE[] getGeneralizerActors() {
-    return generalizerActors;
-  }
-
-  public void setGeneralizerActors(GE[] generalizerActors) {
-    this.generalizerActors = generalizerActors;
+  @Test public void test() {
+    List l = ClassUtil.cast(null);
+    Assert.assertNull(l);
   }
 }

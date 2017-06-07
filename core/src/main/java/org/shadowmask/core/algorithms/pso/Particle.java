@@ -38,6 +38,12 @@ public interface Particle<P extends Position, V extends Velocity, F extends Fitn
   F historyBestFitness();
 
   /**
+   *
+   * @param velocity
+   */
+  void updateVelocity(V velocity);
+
+  /**
    * get better
    */
   void getBetter(P betterPosition, F betterFitness);

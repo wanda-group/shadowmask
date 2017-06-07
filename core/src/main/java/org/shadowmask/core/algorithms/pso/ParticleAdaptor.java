@@ -39,6 +39,10 @@ public abstract class ParticleAdaptor<P extends Position, V extends Velocity, F 
     }
   }
 
+  @Override public void updateVelocity(V velocity) {
+    this.currentVelocity = velocity;
+  }
+
   @Override public void init() {
     currentPosition = randomPosition();
     currentVelocity = randomVelocity();

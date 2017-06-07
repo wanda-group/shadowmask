@@ -20,13 +20,12 @@ package org.shadowmask.core.domain.tree;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.shadowmask.core.domain.DomainTree;
-import org.shadowmask.core.domain.DomainTreeNode;
 import org.shadowmask.core.domain.tree.ComparableDomainTree.ComparableDomainTreeNode;
 import org.shadowmask.core.domain.treeobj.TreeObject;
 
 public abstract class ComparableDomainTree<T extends Comparable<T>>
-    extends DomainTree<ComparableDomainTreeNode<T>> {
+    extends DomainTree<ComparableDomainTreeNode<T>>
+    implements LeafLocator<T, ComparableDomainTreeNode<T>> {
 
   @Override protected ComparableDomainTreeNode<T> constructTNode(
       String jsonStr) {
@@ -82,6 +81,10 @@ public abstract class ComparableDomainTree<T extends Comparable<T>>
       }
     }
     return null;
+  }
+
+  @Override public ComparableDomainTreeNode<T> locate(T t) {
+    return fixALeaf(t);
   }
 
   protected int leafCompareValue(ComparableDomainTreeNode<T> leaf, T value) {
