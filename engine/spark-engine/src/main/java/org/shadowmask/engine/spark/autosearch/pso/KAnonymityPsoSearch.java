@@ -27,6 +27,7 @@ import org.shadowmask.core.algorithms.pso.Swarm;
 import org.shadowmask.core.mask.rules.generalizer.Generalizer;
 import org.shadowmask.core.mask.rules.generalizer.GeneralizerActorAdaptor;
 import org.shadowmask.engine.spark.Rethrow;
+import org.shadowmask.engine.spark.autosearch.Executable;
 
 /**
  * user pso search a solution of data mask
@@ -67,6 +68,8 @@ public class KAnonymityPsoSearch
   private List<MkParticle> particles = new ArrayList<>();
 
   private Generalizer[] generalizers;
+
+  private MkFitnessCalculator mkFitnessCalculator = new MkFitnessCalculator(10);
 
   public KAnonymityPsoSearch() {
 
@@ -112,8 +115,22 @@ public class KAnonymityPsoSearch
   }
 
   @Override public Map<MkParticle, MkFitness> calculateFitness() {
-    // todo calculate all fitness
-    return null;
+    final Object waitObject = new Object();
+    final Map<MkParticle, MkFitness> fitnessMap = new HashMap<>();
+    Executable executable = new Executable() {
+      @Override public void exe() {
+        mkFitnessCalculator
+            .calculateFitness(particles(), fitnessMap, waitObject,privateTable);
+      }
+    };
+    new Thread(executable).start();
+    try {
+      waitObject.wait();
+    } catch (InterruptedException e) {
+      Rethrow.rethrow(e);
+    }
+    return fitnessMap;
+
   }
 
   @Override public Map<MkParticle, MkVelocity> calculateNewVelocities() {

@@ -46,4 +46,15 @@ public class DomainTreeNode<N extends DomainTreeNode> {
   public void setDepth(int depth) {
     this.depth = depth;
   }
+
+  @Override public String toString() {
+    String res = "";
+    DomainTreeNode pointer = this;
+    while (pointer.getParent() != null) {
+      res = "->" + pointer.getName() + res;
+      pointer = pointer.getParent();
+    }
+    res = pointer.getName() + res;
+    return res;
+  }
 }

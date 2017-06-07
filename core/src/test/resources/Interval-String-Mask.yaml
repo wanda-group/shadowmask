@@ -1,0 +1,28 @@
+comparable: true
+type: string
+version: 1.0
+root:
+  text: 中国
+  children:
+    - text: 上海
+      children:
+        - text: 闵行
+          children:
+            - text: 三林
+            - text: 浦江镇
+        - text: 浦东新区
+          children:
+            - text: 塘桥
+            - text: 浦东南路
+    - text: 河北
+      children:
+      - text: 保定
+        children:
+          - text: 蠡县
+          - text: 博野
+      - text: 衡水
+        children:
+        - text: 安平
+          children:
+            - text: 马店
+            - text: 城区
