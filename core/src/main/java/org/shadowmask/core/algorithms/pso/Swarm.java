@@ -108,6 +108,7 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
         // update global best
         if (globalBestParticle() == null || f
             .betterThan(globalBestParticle().historyBestFitness())) {
+          System.out.print(i+"\t");
           updateGlobalBestParticle(pa);
         }
         // update current best
@@ -126,6 +127,7 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
       // move to new position
       for (PA pa : particles) {
         pa.move(velocities.get(pa));
+        pa.updateVelocity(velocities.get(pa));
       }
 
     }

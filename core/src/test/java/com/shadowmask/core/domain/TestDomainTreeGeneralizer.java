@@ -9,7 +9,7 @@ import org.shadowmask.core.mask.rules.generalizer.impl.DomainTreeGeneralizer;
 public class TestDomainTreeGeneralizer
     extends DomainTreeGeneralizer<String, String, TestTreeNode> {
 
-  public DomainTestTree tree = new DomainTestTree();
+  public TaxTestTree tree = new TaxTestTree();
   public Map<String, TestTreeNode> nodeMap = new HashMap<>();
 
   {
@@ -30,19 +30,27 @@ public class TestDomainTreeGeneralizer
     return s;
   }
 
+  @Override public int minLevel() {
+    return 0;
+  }
+
+  @Override public int maxLevel() {
+    return Integer.MAX_VALUE;
+  }
+
   @Test public void test() {
-    String res = this.generalize("北京,东城,宣武门",0);
-    Assert.assertEquals(res,"北京,东城,宣武门");
-    res = this.generalize("北京,东城,宣武门",1);
-    Assert.assertEquals(res,"北京,东城");
-    res = this.generalize("北京,东城,宣武门",2);
-    Assert.assertEquals(res,"北京");
-    res = this.generalize("北京,东城,宣武门",3);
-    Assert.assertEquals(res,"*");
-    res = this.generalize("北京,东城,宣武门",30);
-    Assert.assertEquals(res,"*");
-    res = this.generalize("北京,东城,宣武门1",2);
-    Assert.assertEquals(res,"北京,东城,宣武门1");
+    String res = this.generalize("北京,东城,宣武门", 0);
+    Assert.assertEquals(res, "北京,东城,宣武门");
+    res = this.generalize("北京,东城,宣武门", 1);
+    Assert.assertEquals(res, "北京,东城");
+    res = this.generalize("北京,东城,宣武门", 2);
+    Assert.assertEquals(res, "北京");
+    res = this.generalize("北京,东城,宣武门", 3);
+    Assert.assertEquals(res, "*");
+    res = this.generalize("北京,东城,宣武门", 30);
+    Assert.assertEquals(res, "*");
+    res = this.generalize("北京,东城,宣武门1", 2);
+    Assert.assertEquals(res, "北京,东城,宣武门1");
   }
 
   @Override public int getRootLevel() {

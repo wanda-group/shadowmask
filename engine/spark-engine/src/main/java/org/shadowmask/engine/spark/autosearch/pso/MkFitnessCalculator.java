@@ -50,7 +50,7 @@ public class MkFitnessCalculator {
       };
       executable.registerAfterSegment(new Segment() {
         @Override public void run() {
-          count.getAndAdd(1);
+          count.incrementAndGet();
           if (count.get() == particles.size()) {
             waitObject.notify();
           }

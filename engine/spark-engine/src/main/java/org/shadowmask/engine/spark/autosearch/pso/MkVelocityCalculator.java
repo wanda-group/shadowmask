@@ -17,7 +17,7 @@
  */
 package org.shadowmask.engine.spark.autosearch.pso;
 
-import java.util.Random;
+import org.javatuples.Quintet;
 import org.shadowmask.core.algorithms.pso.VelocityCalculator;
 
 /**
@@ -28,8 +28,6 @@ public abstract class MkVelocityCalculator
 
   public abstract double randomSearchRate();
 
-  public abstract int randomVelocityDimension(int i);
-
   public abstract boolean isZERO(Double number);
 
   @Override public MkVelocity newVelocity(MkVelocity currentV,
@@ -39,50 +37,85 @@ public abstract class MkVelocityCalculator
       MkPosition currentBestPosition, MkFitness currentBestFitness,
       MkPosition currentWorstPosition, MkFitness currentWorstFitness) {
 
-    int dimension = currentV.getVelocity().length;
     double rate = Math.random();
-    MkVelocity velocity = new MkVelocity(dimension);
+
     if (rate < randomSearchRate()) {
       // random search
-      for (int i = 0; i < dimension; ++i) {
-        velocity.getVelocity()[i] = randomVelocityDimension(i);
-      }
-      return velocity;
+      return this.randomVelocity(currentPosition);
     }
 
-    for (int i = 0; i < dimension; ++i) {
-      // try to get better
-      double divider = currentBestFitness.fitnessValue() - currentWorstFitness
-          .fitnessValue();
-      // stay rate
-      double stayRate = 0;
-      if (!isZERO(divider)) {
-        stayRate =
-            (currentFitness.fitnessValue() - currentWorstFitness.fitnessValue())
-                / divider;
-      }
+    Quintet<Double, Double, Double, Double, Double> params =
+        this.learnParams(currentFitness, currentBestFitness,
+            currentWorstFitness, historyBestFitness, globalBestFitness);
 
-      divider =
-          globalBestFitness.fitnessValue() - currentFitness.fitnessValue();
-      // learn from self history best fitness
-      double selfLearnRate = 1;
-      if (!isZERO(divider)) {
-        selfLearnRate =
-            (historyBestFitness.fitnessValue() - currentFitness.fitnessValue())
-                / divider;
-      }
-      // learn from global best particles
-      double learnOther = 1 - selfLearnRate;
-      double viD =
-          currentV.getVelocity()[i] * stayRate + selfLearnRate * Math.random()
-              * (historyBestPostion.getGeneralizerActors()[i].generalLevel()
-              - currentPosition.getGeneralizerActors()[i].generalLevel())
-              + learnOther * Math.random() * (
-              globalBestPosition.getGeneralizerActors()[i].generalLevel()
-                  - currentPosition.getGeneralizerActors()[i].generalLevel());
-      int vi = (int) (new Random().nextInt(2) + viD);
-      velocity.getVelocity()[i] = vi;
-    }
+    MkVelocity velocity =
+        this.calcVelocity(params.getValue0(), params.getValue1(),
+            params.getValue2(), params.getValue3(), params.getValue4(),
+            currentV, currentPosition, historyBestPostion, globalBestPosition);
     return velocity;
   }
+
+  /**
+   * calculate a new velocity
+   *
+   * @param stayRate            keep origin velocity
+   * @param lsRate              learn from particle history best position
+   * @param loRate              learn from best particle in the swarm
+   * @param currentVelocity     current velocity of the paticle
+   * @param historyBestPosition history best position of the particle
+   * @param globalBestPosition  global best position in the swarm
+   * @return a new velocity
+   */
+  protected abstract MkVelocity calcVelocity(Double stayRate, Double lsRate,
+      Double lsRandomScale, Double loRate, Double loRandomScale,
+      MkVelocity currentVelocity, MkPosition currentPosition,
+      MkPosition historyBestPosition, MkPosition globalBestPosition);
+
+  /**
+   * generate a velocity randomly
+   *
+   * @return a new velocity
+   */
+  protected abstract MkVelocity randomVelocity(MkPosition currentPosition);
+
+  /**
+   * calculate learn parameters
+   *
+   * @param currentFitness
+   * @param currentBestFitness
+   * @param currentWorstFitness
+   * @param historyBestFitness
+   * @param globalBestFitness
+   * @return stay rate , learn from self rate ,learn from self random scale ,learn from global best rate ,learn from best random scale
+   */
+
+  protected Quintet<Double, Double, Double, Double, Double> learnParams(
+      MkFitness currentFitness, MkFitness currentBestFitness,
+      MkFitness currentWorstFitness, MkFitness historyBestFitness,
+      MkFitness globalBestFitness) {
+    // try to get better
+    double divider =
+        currentBestFitness.fitnessValue() - currentWorstFitness.fitnessValue();
+    // stay rate
+    double stayRate = 0;
+    if (!isZERO(divider)) {
+      stayRate =
+          (currentFitness.fitnessValue() - currentWorstFitness.fitnessValue())
+              / divider;
+    }
+
+    divider = globalBestFitness.fitnessValue() - currentFitness.fitnessValue();
+    // learn from self history best fitness
+    double selfLearnRate = 1;
+    if (!isZERO(divider)) {
+      selfLearnRate =
+          (historyBestFitness.fitnessValue() - currentFitness.fitnessValue())
+              / divider;
+    }
+    // learn from global best particles
+    double learnOther = 1 - selfLearnRate;
+    return new Quintet<>(stayRate, selfLearnRate, Math.random(), learnOther,
+        Math.random());
+  }
+
 }

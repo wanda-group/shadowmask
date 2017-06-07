@@ -15,36 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.autosearch.pso;
+package org.shadowmask.core.util;
 
-import org.shadowmask.core.algorithms.pso.Position;
-import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
-
-/**
- * abstract of position in pso ,actually collection of generalizers
- */
-public class MkPosition implements Position {
-
-  protected GeneralizerActor[] generalizerActors;
-
-  protected int dimension;
-
-  public MkPosition(int dimension) {
-    this.dimension = dimension;
-  }
-
-  public MkPosition() {
-  }
-
-  public void init() {
-
-  }
-
-  public GeneralizerActor[] getGeneralizerActors() {
-    return generalizerActors;
-  }
-
-  public void setGeneralizerActors(GeneralizerActor[] generalizerActors) {
-    this.generalizerActors = generalizerActors;
+public class Rethrow {
+  public static void rethrow(Exception e) {
+    if (e instanceof RuntimeException) {
+      throw (RuntimeException) e;
+    } else {
+      throw new RuntimeException(e);
+    }
   }
 }

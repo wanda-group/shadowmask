@@ -15,34 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.mask.rules.generalizer;
+package org.shadowmask.core.mask.rules.generalizer.actor;
 
-public class GeneralizerActorAdaptor<IN, OUT>
+public abstract class ClusterGeneralizerActor<IN, OUT>
     implements GeneralizerActor<IN, OUT> {
 
-  public GeneralizerActorAdaptor(Generalizer<IN, OUT> generalizer, int level) {
-    this.generalizer = generalizer;
-    this.level = level;
+  @Override public OUT generalize(IN in) {
+    return this.locateGeneralizer(in).generalize(in);
   }
 
-  Generalizer<IN, OUT> generalizer;
+  abstract GeneralizerActor<IN, OUT> locateGeneralizer(IN in);
 
-  int level;
-
-  @Override public Generalizer<IN, OUT> generalizer() {
-    return generalizer;
-  }
-
-  @Override public int generalLevel() {
-    return level;
-  }
-
-  @Override public void updateLevel(int deltaLevel) {
-    int targetLevel = this.level + deltaLevel;
-    if (targetLevel > generalizer.getRootLevel()) {
-      this.level = generalizer.getRootLevel();
-    } else if (targetLevel < 0) {
-      this.level = 0;
-    }
-  }
 }

@@ -15,36 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.autosearch.pso;
-
-import org.shadowmask.core.algorithms.pso.Position;
-import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+package org.shadowmask.core.data;
 
 /**
- * abstract of position in pso ,actually collection of generalizers
+ * 3 kinds types table columns
  */
-public class MkPosition implements Position {
+public enum AttributeType {
 
-  protected GeneralizerActor[] generalizerActors;
+  IDENTIFIER, QUASI_IDENTIFIER, SENSITIVE
 
-  protected int dimension;
-
-  public MkPosition(int dimension) {
-    this.dimension = dimension;
-  }
-
-  public MkPosition() {
-  }
-
-  public void init() {
-
-  }
-
-  public GeneralizerActor[] getGeneralizerActors() {
-    return generalizerActors;
-  }
-
-  public void setGeneralizerActors(GeneralizerActor[] generalizerActors) {
-    this.generalizerActors = generalizerActors;
-  }
 }

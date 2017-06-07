@@ -15,17 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.domain.tree;
+package org.shadowmask.engine.spark.autosearch.pso.cluster;
 
-import com.google.gson.Gson;
-import org.shadowmask.core.domain.treeobj.DoubleTreeObject;
-import org.shadowmask.core.domain.treeobj.TreeObject;
-import org.shadowmask.core.util.JsonUtil;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
+import org.shadowmask.engine.spark.autosearch.pso.MkPosition;
 
-public class DoubleDomainTree extends ComparableDomainTree<Double> {
-  @Override protected TreeObject<Double> constructTreeObject(String json) {
-    Gson gson = JsonUtil.newGsonInstance();
-    DoubleTreeObject obj = gson.fromJson(json, DoubleTreeObject.class);
-    return obj;
+public class TaxTreeClusterMkPosition extends MkPosition {
+
+  @Override public void init() {
+    this.generalizerActors = new TaxTreeClusterGeneralizerActor[this.dimension];
+    //todo generate random  generalizers
   }
 }

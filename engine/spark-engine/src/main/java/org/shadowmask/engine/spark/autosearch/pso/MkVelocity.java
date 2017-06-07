@@ -33,6 +33,12 @@ public class MkVelocity implements Velocity {
     this.velocity = new int[size];
   }
 
+  public MkVelocity() {
+  }
+
+  public void init() {
+  }
+
   public int[] getVelocity() {
     return velocity;
   }

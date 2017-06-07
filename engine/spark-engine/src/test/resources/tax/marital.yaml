@@ -1,0 +1,21 @@
+comparable: true
+type: string
+version: 1.0
+root:
+  text: marital
+  children:
+    - text: normal
+      children:
+        - text: Married-civ-spouse
+        - text: Never-married
+    - text: exception
+      children:
+          - text: port
+            children:
+              - text: Divorced
+              - text: Separated
+          - text: pasv
+            children:
+              - text: Widowed
+              - text: Married-spouse-absent
+              - text: Married-AF-spouse

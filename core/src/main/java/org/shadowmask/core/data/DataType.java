@@ -15,26 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.mask.rules.generalizer;
+package org.shadowmask.core.data;
 
-import java.io.Serializable;
-
-public interface GeneralizerActor<IN, OUT> extends Serializable {
-
-  /**
-   * general method
-   */
-  Generalizer<IN, OUT> generalizer();
-
-  /**
-   * acquire a general level according to or not the input value
-   */
-  int generalLevel();
-
-  /**
-   * update level
-   * @param deltaLevel
-   */
-  void updateLevel(int deltaLevel);
-
+/**
+ * data types supported
+ */
+public enum DataType {
+  INTEGER, DECIMAL, DATE, COMPARABLE_STRING, STRING
 }

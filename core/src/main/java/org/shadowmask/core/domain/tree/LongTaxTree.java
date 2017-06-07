@@ -15,36 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.autosearch.pso;
+package org.shadowmask.core.domain.tree;
 
-import org.shadowmask.core.algorithms.pso.Position;
-import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+import com.google.gson.Gson;
+import org.shadowmask.core.domain.treeobj.LongTreeObject;
+import org.shadowmask.core.domain.treeobj.TreeObject;
+import org.shadowmask.core.util.JsonUtil;
 
-/**
- * abstract of position in pso ,actually collection of generalizers
- */
-public class MkPosition implements Position {
+public class LongTaxTree extends ComparableTaxTree<Long> {
 
-  protected GeneralizerActor[] generalizerActors;
-
-  protected int dimension;
-
-  public MkPosition(int dimension) {
-    this.dimension = dimension;
-  }
-
-  public MkPosition() {
-  }
-
-  public void init() {
-
-  }
-
-  public GeneralizerActor[] getGeneralizerActors() {
-    return generalizerActors;
-  }
-
-  public void setGeneralizerActors(GeneralizerActor[] generalizerActors) {
-    this.generalizerActors = generalizerActors;
+  @Override protected TreeObject<Long> constructTreeObject(String json) {
+    Gson gson = JsonUtil.newGsonInstance();
+    LongTreeObject obj = gson.fromJson(json, LongTreeObject.class);
+    return obj;
   }
 }

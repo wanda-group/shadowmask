@@ -19,12 +19,12 @@ package com.shadowmask.core.domain;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.shadowmask.core.domain.tree.ComparableDomainTree.ComparableDomainTreeNode;
-import org.shadowmask.core.domain.tree.LongDomainTree;
+import org.shadowmask.core.domain.tree.ComparableTaxTree.ComparableTaxTreeNode;
+import org.shadowmask.core.domain.tree.LongTaxTree;
 
 public class TestNumbericDomainTree {
   @Test public void testTree() {
-    LongDomainTree tree = new LongDomainTree();
+    LongTaxTree tree = new LongTaxTree();
     tree.constructFromYamlInputStream(this.getClass().getClassLoader()
         .getResourceAsStream("Interval-Mask.yaml"));
 
@@ -36,7 +36,7 @@ public class TestNumbericDomainTree {
       }
     }
     Assert.assertTrue(!hasRevert);
-    ComparableDomainTreeNode<Long> node = tree.fixALeaf(30L);
+    ComparableTaxTreeNode<Long> node = tree.fixALeaf(30L);
     System.out.println();
   }
 }

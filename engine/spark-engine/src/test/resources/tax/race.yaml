@@ -1,0 +1,13 @@
+comparable: true
+type: string
+version: 1.0
+root:
+  text: race
+  children:
+    - text: white
+    - text: color
+      children:
+        - text: Black
+        - text: Asian-Pac-Islander
+        - text: Amer-Indian-Eskimo
+        - text: Other

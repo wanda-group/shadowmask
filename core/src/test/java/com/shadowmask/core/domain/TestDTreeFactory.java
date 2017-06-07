@@ -17,19 +17,36 @@
  */
 package com.shadowmask.core.domain;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import org.junit.Assert;
 import org.junit.Test;
-import org.shadowmask.core.domain.tree.ComparableTaxTree.ComparableTaxTreeNode;
+import org.shadowmask.core.data.DataType;
+import org.shadowmask.core.domain.DTreeFactory;
+import org.shadowmask.core.domain.tree.DateTaxTree;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.domain.tree.OrderedStringTaxTree;
 
-public class TestOrderedStringTree {
-  @Test public void test() {
-    OrderedStringTaxTree
-        tree = new OrderedStringTaxTree().withComparator(OrderedStringTaxTree.ROOT_COMBINE_COMPARE);
+public class TestDTreeFactory {
+
+  @Test public void test() throws ParseException {
+    OrderedStringTaxTree tree =
+        DTreeFactory.<OrderedStringTaxTree>getTree(
+            DataType.COMPARABLE_STRING).withComparator(
+            OrderedStringTaxTree.CombineFromRootWithSeparatorComparator
+                .newInstance());
     tree.constructFromYamlInputStream(this.getClass().getClassLoader()
         .getResourceAsStream("Interval-String-Mask.yaml"));
-    ComparableTaxTreeNode<String> node = tree.fixALeaf("中国,上海,浦东新区,浦东南路455号");
-//    node = tree.fixALeaf("中国,上海,闵行");
+    TaxTreeNode node = tree.locate("中国,河北,保定,博野,南小王");
     Assert.assertNotNull(node);
+
+    DateTaxTree dateTree1 = DTreeFactory.getTree(DataType.DATE);
+    dateTree1.withPattern("yyyy/MM/dd");
+    dateTree1.constructFromYamlInputStream(this.getClass().getClassLoader()
+        .getResourceAsStream("Interval-Date-Mask.yaml"));
+    TaxTreeNode node1 = dateTree1.locate(
+        new SimpleDateFormat(dateTree1.getPattern()).parse("2014/2/14"));
+    Assert.assertNotNull(node1);
   }
+
 }

@@ -21,13 +21,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import org.apache.spark.rdd.RDD;
 import org.shadowmask.core.algorithms.pso.Swarm;
 import org.shadowmask.core.mask.rules.generalizer.Generalizer;
-import org.shadowmask.core.mask.rules.generalizer.GeneralizerActorAdaptor;
 import org.shadowmask.engine.spark.Rethrow;
 import org.shadowmask.engine.spark.autosearch.Executable;
+import org.shadowmask.engine.spark.autosearch.pso.cluster.ClusterMkVelocityCalculator;
+import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkPosition;
+import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkVelocity;
 
 /**
  * user pso search a solution of data mask
@@ -35,36 +36,18 @@ import org.shadowmask.engine.spark.autosearch.Executable;
 public class KAnonymityPsoSearch
     extends Swarm<MkVelocity, MkFitness, MkPosition, MkParticle> {
 
-  MkVelocityCalculator calculator = new MkVelocityCalculator() {
-    @Override public double randomSearchRate() {
-      return 0.01;
-    }
-
-    @Override public int randomVelocityDimension(int i) {
-      return KAnonymityPsoSearch.this.dimension;
-    }
-
-    @Override public boolean isZERO(Double number) {
-      return number * 1000000 != 0;
-    }
-  };
-
   /**
    * dataset to be generalized .
    */
   private RDD<String> privateTable;
-
   /**
    * target k value .
    */
   private int k;
-
   private int maxSteps;
-
   private int particleSize;
-
   private int dimension;
-
+  MkVelocityCalculator calculator = new ClusterMkVelocityCalculator();
   private List<MkParticle> particles = new ArrayList<>();
 
   private Generalizer[] generalizers;
@@ -83,29 +66,21 @@ public class KAnonymityPsoSearch
   private void init() throws ClassNotFoundException {
     this.particles = new ArrayList<>();
     for (int i = 0; i < this.particleSize(); ++i) {
-      final int index = i;
       // generate particles randomly
       MkParticle particle = new MkParticle() {
         @Override public MkPosition randomPosition() {
-          MkPosition mkPosition = new MkPosition(dimension);
-          for (int j = 0; j < dimension; ++j) {
-            mkPosition.getGeneralizerActors()[j] =
-                new GeneralizerActorAdaptor(generalizers[j],
-                    new Random().nextInt(generalizers[j].getRootLevel() + 1));
-          }
+          MkPosition mkPosition = new TaxTreeClusterMkPosition();
+          mkPosition.init();
           return mkPosition;
         }
 
         @Override public MkVelocity randomVelocity() {
-          MkVelocity mkVelocity = new MkVelocity(dimension);
-          for (int j = 0; j < dimension; ++j) {
-            mkVelocity.getVelocity()[j] =
-                new Random().nextInt(generalizers[j].getRootLevel() + 1) * 2
-                    - generalizers[j].getRootLevel();
-          }
+          MkVelocity mkVelocity = new TaxTreeClusterMkVelocity();
+          mkVelocity.init();
           return mkVelocity;
         }
       };
+      particles.add(particle);
     }
   }
 
@@ -120,7 +95,8 @@ public class KAnonymityPsoSearch
     Executable executable = new Executable() {
       @Override public void exe() {
         mkFitnessCalculator
-            .calculateFitness(particles(), fitnessMap, waitObject,privateTable);
+            .calculateFitness(particles(), fitnessMap, waitObject,
+                privateTable);
       }
     };
     new Thread(executable).start();

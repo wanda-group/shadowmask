@@ -15,36 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.autosearch.pso;
+package org.shadowmask.core.domain.tree;
 
-import org.shadowmask.core.algorithms.pso.Position;
-import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
-
-/**
- * abstract of position in pso ,actually collection of generalizers
- */
-public class MkPosition implements Position {
-
-  protected GeneralizerActor[] generalizerActors;
-
-  protected int dimension;
-
-  public MkPosition(int dimension) {
-    this.dimension = dimension;
-  }
-
-  public MkPosition() {
-  }
-
-  public void init() {
-
-  }
-
-  public GeneralizerActor[] getGeneralizerActors() {
-    return generalizerActors;
-  }
-
-  public void setGeneralizerActors(GeneralizerActor[] generalizerActors) {
-    this.generalizerActors = generalizerActors;
-  }
+public interface LeafLocator<T> {
+  TaxTreeNode locate(T t);
 }

@@ -15,36 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.autosearch.pso;
+package com.shadowmask.core.domain;
 
-import org.shadowmask.core.algorithms.pso.Position;
-import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import org.junit.Assert;
+import org.junit.Test;
+import org.shadowmask.core.domain.tree.ComparableTaxTree.ComparableTaxTreeNode;
+import org.shadowmask.core.domain.tree.DateTaxTree;
 
-/**
- * abstract of position in pso ,actually collection of generalizers
- */
-public class MkPosition implements Position {
+public class TestDateDomainTree {
 
-  protected GeneralizerActor[] generalizerActors;
-
-  protected int dimension;
-
-  public MkPosition(int dimension) {
-    this.dimension = dimension;
-  }
-
-  public MkPosition() {
-  }
-
-  public void init() {
-
-  }
-
-  public GeneralizerActor[] getGeneralizerActors() {
-    return generalizerActors;
-  }
-
-  public void setGeneralizerActors(GeneralizerActor[] generalizerActors) {
-    this.generalizerActors = generalizerActors;
+  @Test
+  public void test() throws ParseException {
+    String pattern = "yyyy/MM/dd";
+    SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+    DateTaxTree tree = new DateTaxTree().withPattern(pattern);
+    tree.constructFromYamlInputStream(this.getClass().getClassLoader().getResourceAsStream("Interval-Date-Mask.yaml"));
+    ComparableTaxTreeNode<Date> node = tree.fixALeaf(sdf.parse("1999/09/01"));
+    Assert.assertNotNull(node);
   }
 }
