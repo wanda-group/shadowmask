@@ -2,7 +2,7 @@ package com.shadowmask.core.domain;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.shadowmask.core.domain.DomainTree;
+import org.shadowmask.core.domain.tree.DomainTree;
 
 public class DomainTestTree extends DomainTree<TestTreeNode> {
   @Override protected TestTreeNode constructTNode(String jsonStr) {

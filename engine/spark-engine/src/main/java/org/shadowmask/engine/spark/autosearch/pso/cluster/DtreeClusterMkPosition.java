@@ -15,26 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.mask.rules.generalizer;
+package org.shadowmask.engine.spark.autosearch.pso.cluster;
 
-import java.io.Serializable;
+import org.shadowmask.core.mask.rules.generalizer.actor.DtreeClusterGeneralizerActor;
+import org.shadowmask.engine.spark.autosearch.pso.MkPosition;
 
-public interface GeneralizerActor<IN, OUT> extends Serializable {
+public class DtreeClusterMkPosition
+    extends MkPosition<DtreeClusterGeneralizerActor> {
 
-  /**
-   * general method
-   */
-  Generalizer<IN, OUT> generalizer();
+  private int dimension;
 
-  /**
-   * acquire a general level according to or not the input value
-   */
-  int generalLevel();
-
-  /**
-   * update level
-   * @param deltaLevel
-   */
-  void updateLevel(int deltaLevel);
-
+  @Override public void init() {
+    this.generalizerActors = new DtreeClusterGeneralizerActor[this.dimension];
+    //todo generate random  generalizers
+  }
 }

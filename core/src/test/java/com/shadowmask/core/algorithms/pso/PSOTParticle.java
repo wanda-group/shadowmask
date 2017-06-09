@@ -5,9 +5,9 @@ import org.shadowmask.core.algorithms.pso.Particle;
 public class PSOTParticle
     implements Particle<PSOTPosition, PSOTVelocity, PSOTFitness> {
 
-  private double lbound = -10000D;
+  private double lbound = -999999999D;
 
-  private double hbound = 10000D;
+  private double hbound = 999999999D;
 
   public PSOTPosition currentPosition;
 
@@ -70,6 +70,10 @@ public class PSOTParticle
 
   @Override public PSOTFitness historyBestFitness() {
     return historyBestFitness;
+  }
+
+  @Override public void updateVelocity(PSOTVelocity velocity) {
+    this.currentV = velocity;
   }
 
   @Override public void getBetter(PSOTPosition betterPosition,

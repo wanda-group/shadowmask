@@ -23,7 +23,7 @@ import org.shadowmask.engine.spark.ClassUtil;
 public abstract class MkParticle
     extends ParticleAdaptor<MkPosition, MkVelocity, MkFitness> {
 
-  private int dimension;
+  private MkParticleDriver particleDriver;
 
   @Override public void move(MkVelocity mkVelocity) {
     MkPosition position = this.currentPosition();
@@ -44,7 +44,8 @@ public abstract class MkParticle
       throw new RuntimeException(
           "dimension of generalizers and velocities should be equally");
     }
-    position.move(mkVelocity);
+
+    particleDriver.drive(this, mkVelocity);
   }
 
   @Override public void getBetter(MkPosition betterPosition,
@@ -53,7 +54,9 @@ public abstract class MkParticle
     historyBestPosition = ClassUtil.clone(betterPosition);
   }
 
-
-
-
+  public MkParticle withParticleDriver(
+      MkParticleDriver particleDriver) {
+    this.particleDriver = particleDriver;
+    return this;
+  }
 }

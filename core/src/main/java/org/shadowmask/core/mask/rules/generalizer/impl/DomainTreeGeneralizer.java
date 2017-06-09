@@ -17,30 +17,34 @@
  */
 package org.shadowmask.core.mask.rules.generalizer.impl;
 
-import org.shadowmask.core.domain.DomainTreeNode;
+import org.shadowmask.core.domain.tree.DomainTreeNode;
 import org.shadowmask.core.mask.rules.generalizer.Generalizer;
 
 public abstract class DomainTreeGeneralizer<T, R, TNODE extends DomainTreeNode<TNODE>>
     implements Generalizer<T, R> {
   @Override public R generalize(T t, int level) {
     TNODE leaf = fixLeaf(t);
-    if(leaf == null){
+    if (leaf == null) {
       return convertInputToResult(t);
     }
-    for (int i = 0; i < level; ++i) {
-      if(leaf.getParent()!=null){
+    for (int i = Math.max(0, minLevel()); i < Math.min(level, maxLevel());
+        ++i) {
+      if (leaf.getParent() != null) {
         leaf = leaf.getParent();
-      }else {
+      } else {
         break;
       }
     }
     return convertNodeToResult(leaf);
   }
 
-
   public abstract TNODE fixLeaf(T t);
 
   public abstract R convertNodeToResult(TNODE tnode);
 
   public abstract R convertInputToResult(T t);
+
+  public abstract int minLevel();
+
+  public abstract int maxLevel();
 }

@@ -52,11 +52,11 @@ public class PSOTSwarm
       }
 
       @Override public double lBound() {
-        return -10000D;
+        return -999999999D;
       }
 
       @Override public double hBound() {
-        return 10000D;
+        return 999999999D;
       }
     };
     for (PSOTParticle particle : particles) {
@@ -75,11 +75,11 @@ public class PSOTSwarm
   }
 
   @Override public int maxSteps() {
-    return 200;
+    return 300;
   }
 
   @Override public int particleSize() {
-    return 1000;
+    return 200;
   }
 
   @Override public void updateCurrentBestParticle(PSOTParticle p) {
@@ -88,6 +88,7 @@ public class PSOTSwarm
     //      System.out.println(p.currentPosition.xValue+"\t"+p.currentFitness().value);
     //    }
   }
+
 
   @Override public void updateGlobalBestParticle(PSOTParticle p) {
 

@@ -1,4 +1,4 @@
-package org.shadowmask.core.domain;
+package org.shadowmask.core.domain.tree;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

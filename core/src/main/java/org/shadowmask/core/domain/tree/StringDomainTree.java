@@ -4,8 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
-import org.shadowmask.core.domain.DomainTree;
-import org.shadowmask.core.domain.DomainTreeNode;
 import org.shadowmask.core.domain.tree.StringDomainTree.StringDomainTreeNode;
 import org.shadowmask.core.util.JsonUtil;
 
@@ -13,7 +11,7 @@ import org.shadowmask.core.util.JsonUtil;
  * String domain tree
  */
 
-public class StringDomainTree extends DomainTree<StringDomainTreeNode> {
+public class StringDomainTree extends DomainTree<StringDomainTreeNode> implements LeafLocator<String,StringDomainTreeNode> {
   public StringDomainTree(String json) {
     super(json);
   }
@@ -45,6 +43,10 @@ public class StringDomainTree extends DomainTree<StringDomainTreeNode> {
 
   public StringDomainTreeNode fixALeaf(String name) {
     return this.index.get(name);
+  }
+
+  @Override public StringDomainTreeNode locate(String s) {
+    return null;
   }
 
   static class StringDomainTreeNode

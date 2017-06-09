@@ -17,31 +17,15 @@
  */
 package org.shadowmask.engine.spark.autosearch.pso;
 
-import org.shadowmask.core.algorithms.pso.Position;
-import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+import org.shadowmask.core.algorithms.pso.Particle;
+import org.shadowmask.core.algorithms.pso.Velocity;
 
-/**
- * abstract of position in pso ,actually collection of generalizers
- */
-public class MkPosition<GE extends GeneralizerActor> implements Position {
-
-  protected GE[] generalizerActors;
-
-  public MkPosition(int size) {
-  }
-
-  public MkPosition() {
-  }
-
-  public void init() {
-
-  }
-
-  public GE[] getGeneralizerActors() {
-    return generalizerActors;
-  }
-
-  public void setGeneralizerActors(GE[] generalizerActors) {
-    this.generalizerActors = generalizerActors;
-  }
+public interface MkParticleDriver {
+  /**
+   * drive particle to new position
+   *
+   * @param pa
+   * @param v
+   */
+  void drive(MkParticle pa, MkVelocity v);
 }

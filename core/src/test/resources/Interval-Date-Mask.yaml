@@ -1,0 +1,26 @@
+comparable: true
+type: string
+version: 1.0
+root:
+  text: 公元后
+  children:
+    - text: 21世纪00年代
+      children:
+        - text: 2000年-2005年
+          lBound: 2000/01/01
+          hBound: 2005/12/31
+        - text: 2006年-2010年
+          lBound: 2006/01/01
+          hBound: 2010/12/31
+    - text: 10年代
+      children:
+        - text: 2011-2017年
+          lBound: 2011/01/01
+          hBound: 2017/12/31
+        - text: 2017年后
+          lBound: 2018/01/01
+          hBound: 9999/01/01
+    - text: 20世纪
+      lBound: 1999/12/31
+      hBound: 1900/01/01
+
