@@ -1,0 +1,20 @@
+comparable: true
+type: string
+version: 1.0
+root:
+  text: work class
+  children:
+    - text: self employed
+      children:
+        - text: Self-emp-inc
+        - text: Self-emp-not-inc
+    - text: Government
+      children:
+        - text: Federal-gov
+        - text: Local-gov
+        - text: State-gov
+    - text: Unemployed
+      children:
+        - text: Without-pay
+        - text: Never-worked
+    - text: Private

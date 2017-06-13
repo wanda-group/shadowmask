@@ -19,46 +19,46 @@ package com.shadowmask.core.mask.rules.generalization.actor;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.shadowmask.core.domain.tree.DomainTreeNode;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.domain.tree.LeafLocator;
-import org.shadowmask.core.domain.tree.OrderedStringDomainTree;
-import org.shadowmask.core.mask.rules.generalizer.actor.DTreeGeneralizerActor;
-import org.shadowmask.core.mask.rules.generalizer.actor.DtreeClusterGeneralizerActor;
+import org.shadowmask.core.domain.tree.OrderedStringTaxTree;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
 
 public class TestDTreeGeneralizer {
 
   @Test public void test() {
-    OrderedStringDomainTree tree = new OrderedStringDomainTree()
-        .withComparator(OrderedStringDomainTree.ROOT_COMBINE_COMPARE);
+    OrderedStringTaxTree tree = new OrderedStringTaxTree()
+        .withComparator(OrderedStringTaxTree.ROOT_COMBINE_COMPARE);
     tree.constructFromYamlInputStream(this.getClass().getClassLoader()
         .getResourceAsStream("Interval-String-Mask.yaml"));
 
-    DTreeGeneralizerActor<String, String> treeActor =
-        new DTreeGeneralizerActor<String, String>() {
+    TaxTreeGeneralizerActor<String, String> treeActor =
+        new TaxTreeGeneralizerActor<String, String>() {
 
-          @Override public DTreeGeneralizerActor<String, String> newInstance() {
+          @Override public TaxTreeGeneralizerActor<String, String> newInstance() {
             return null;
           }
 
-          @Override protected String parseNode(DomainTreeNode tnode) {
+          @Override protected String parseNode(TaxTreeNode tnode) {
             return tnode.getName();
           }
         }.withDTree((LeafLocator) tree).withLevel(0);
 
-    DTreeGeneralizerActor<String, String> treeActor1 =
-        new DTreeGeneralizerActor<String, String>() {
+    TaxTreeGeneralizerActor<String, String> treeActor1 =
+        new TaxTreeGeneralizerActor<String, String>() {
 
-          @Override public DTreeGeneralizerActor<String, String> newInstance() {
+          @Override public TaxTreeGeneralizerActor<String, String> newInstance() {
             return null;
           }
 
-          @Override protected String parseNode(DomainTreeNode tnode) {
+          @Override protected String parseNode(TaxTreeNode tnode) {
             return tnode.getName();
           }
         }.withDTree((LeafLocator) tree).withLevel(2);
 
-    DtreeClusterGeneralizerActor<String, String> clusterActor =
-        new DtreeClusterGeneralizerActor<String, String>()
+    TaxTreeClusterGeneralizerActor<String, String> clusterActor =
+        new TaxTreeClusterGeneralizerActor<String, String>()
             .withMasterGeneralizer(treeActor).withTree((LeafLocator) tree)
             .addSlaveGeneralizer(tree.getLeaves().get(0),treeActor1);
 

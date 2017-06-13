@@ -15,18 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.autosearch.pso.cluster;
+package org.shadowmask.core.data;
 
-import org.shadowmask.core.mask.rules.generalizer.actor.DtreeClusterGeneralizerActor;
-import org.shadowmask.engine.spark.autosearch.pso.MkPosition;
-
-public class DtreeClusterMkPosition
-    extends MkPosition<DtreeClusterGeneralizerActor> {
-
-  private int dimension;
-
-  @Override public void init() {
-    this.generalizerActors = new DtreeClusterGeneralizerActor[this.dimension];
-    //todo generate random  generalizers
-  }
+/**
+ * data types supported
+ */
+public enum DataType {
+  INTEGER, DECIMAL, DATE, COMPARABLE_STRING, STRING
 }

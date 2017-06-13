@@ -1,0 +1,8 @@
+comparable: true
+type: string
+version: 1.0
+root:
+  text: secret
+  children:
+    - text: Female
+    - text: Male

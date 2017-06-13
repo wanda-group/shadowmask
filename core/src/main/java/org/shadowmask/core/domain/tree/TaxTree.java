@@ -5,22 +5,23 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.shadowmask.core.util.JsonUtil;
 import org.yaml.snakeyaml.Yaml;
 
-public abstract class DomainTree<TNODE extends DomainTreeNode> {
-  private int height;
-  private TNODE root;
-  private List<TNODE> leaves;
-  private String version;
+public abstract class TaxTree<TNODE extends TaxTreeNode> implements
+    Serializable {
+  protected TNODE root;
+  protected List<TNODE> leaves;
+  protected String version;
 
-  public DomainTree(String json) {
+  public TaxTree(String json) {
     constructFromJson(json);
   }
 
-  public DomainTree() {
+  public TaxTree() {
   }
 
   protected abstract TNODE constructTNode(String jsonStr);

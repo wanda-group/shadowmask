@@ -15,18 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.domain.tree;
+package com.shadowmask.core.domain;
 
-import com.google.gson.Gson;
-import org.shadowmask.core.domain.treeobj.LongTreeObject;
-import org.shadowmask.core.domain.treeobj.TreeObject;
-import org.shadowmask.core.util.JsonUtil;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
+import org.shadowmask.core.domain.tree.LongTaxTree;
 
-public class LongDomainTree extends ComparableDomainTree<Long> {
-
-  @Override protected TreeObject<Long> constructTreeObject(String json) {
-    Gson gson = JsonUtil.newGsonInstance();
-    LongTreeObject obj = gson.fromJson(json, LongTreeObject.class);
-    return obj;
+public class TestDomainTreeBuiltFromSortedValues {
+  @Test public void test() {
+    LongTaxTree tree = new LongTaxTree();
+    List<Long> list = new ArrayList<>();
+    for (int i = 0; i < 10; i++) {
+      list.add((long) i);
+    }
+    tree.buildFromSortedValues(list.iterator(),10,5,new int[]{4,3,2});
+    Assert.assertEquals(5,tree.getLeaves().size());
   }
 }

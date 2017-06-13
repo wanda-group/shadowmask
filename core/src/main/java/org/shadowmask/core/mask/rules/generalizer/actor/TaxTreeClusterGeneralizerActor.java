@@ -20,21 +20,21 @@ package org.shadowmask.core.mask.rules.generalizer.actor;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.shadowmask.core.domain.tree.DomainTreeNode;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.domain.tree.LeafLocator;
 import org.shadowmask.core.util.Predictor;
 
 /**
  * find a generalizer from slaveMap ,if null use the master Generalizer
  */
-public class DtreeClusterGeneralizerActor<IN, OUT>
+public class TaxTreeClusterGeneralizerActor<IN, OUT>
     extends ClusterGeneralizerActor<IN, OUT> {
 
   private GeneralizerActor<IN, OUT> masterGeneralizer;
 
-  private LeafLocator<IN, DomainTreeNode> tree;
+  private LeafLocator<IN> tree;
 
-  private Map<DomainTreeNode, GeneralizerActor<IN, OUT>> slaveMap = new HashMap<>();
+  private Map<TaxTreeNode, GeneralizerActor<IN, OUT>> slaveMap = new HashMap<>();
 
   @Override GeneralizerActor<IN, OUT> locateGeneralizer(IN in) {
 
@@ -43,7 +43,7 @@ public class DtreeClusterGeneralizerActor<IN, OUT>
     Predictor.predict(tree != null, "tree should not be null");
     Predictor.predict(slaveMap!=null, "slave map should not be null");
 
-    DomainTreeNode leaf = tree.locate(in);
+    TaxTreeNode leaf = tree.locate(in);
     GeneralizerActor<IN, OUT> generalizer = slaveMap.get(leaf);
     if (generalizer == null) {
       generalizer = masterGeneralizer;
@@ -51,20 +51,20 @@ public class DtreeClusterGeneralizerActor<IN, OUT>
     return generalizer;
   }
 
-  public DtreeClusterGeneralizerActor<IN, OUT> withTree(
-      LeafLocator<IN, DomainTreeNode> tree) {
+  public TaxTreeClusterGeneralizerActor<IN, OUT> withTree(
+      LeafLocator<IN> tree) {
     this.tree = tree;
     return this;
   }
 
-  public DtreeClusterGeneralizerActor<IN, OUT>withMasterGeneralizer(
+  public TaxTreeClusterGeneralizerActor<IN, OUT> withMasterGeneralizer(
       GeneralizerActor<IN, OUT> masterGeneralizer) {
     this.masterGeneralizer = masterGeneralizer;
     return this;
   }
 
-  public DtreeClusterGeneralizerActor<IN, OUT> addSlaveGeneralizer(
-      DomainTreeNode tnode,GeneralizerActor<IN, OUT> generalizer) {
+  public TaxTreeClusterGeneralizerActor<IN, OUT> addSlaveGeneralizer(
+      TaxTreeNode tnode,GeneralizerActor<IN, OUT> generalizer) {
     Predictor.predict(slaveMap!=null, "slave map should not be null");
     this.slaveMap.put(tnode,generalizer);
     return this;
@@ -74,11 +74,11 @@ public class DtreeClusterGeneralizerActor<IN, OUT>
     return masterGeneralizer;
   }
 
-  public LeafLocator<IN, DomainTreeNode> getTree() {
+  public LeafLocator<IN> getTree() {
     return tree;
   }
 
-  public Map<DomainTreeNode, GeneralizerActor<IN, OUT>> getSlaveMap() {
+  public Map<TaxTreeNode, GeneralizerActor<IN, OUT>> getSlaveMap() {
     return slaveMap;
   }
 }

@@ -18,10 +18,10 @@
 package org.shadowmask.engine.spark.autosearch.pso.cluster;
 
 import java.util.Map;
-import org.shadowmask.core.domain.tree.DomainTreeNode;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.engine.spark.autosearch.pso.MkVelocity;
 
-public class DtreeClusterMkVelocity extends MkVelocity {
+public class TaxTreeClusterMkVelocity extends MkVelocity {
 
   Dimension[] dimensions;
 
@@ -36,7 +36,7 @@ public class DtreeClusterMkVelocity extends MkVelocity {
   static class Dimension {
     private Integer masterDeltaLevel;
 
-    private Map<DomainTreeNode, Integer> slaveDeltaLevelMap;
+    private Map<TaxTreeNode, Integer> slaveDeltaLevelMap;
 
     public int getMasterDeltaLevel() {
       return masterDeltaLevel;
@@ -46,12 +46,12 @@ public class DtreeClusterMkVelocity extends MkVelocity {
       this.masterDeltaLevel = masterDeltaLevel;
     }
 
-    public Map<DomainTreeNode, Integer> getSlaveDeltaLevelMap() {
+    public Map<TaxTreeNode, Integer> getSlaveDeltaLevelMap() {
       return slaveDeltaLevelMap;
     }
 
     public void setSlaveDeltaLevelMap(
-        Map<DomainTreeNode, Integer> slaveDeltaLevelMap) {
+        Map<TaxTreeNode, Integer> slaveDeltaLevelMap) {
       this.slaveDeltaLevelMap = slaveDeltaLevelMap;
     }
   }

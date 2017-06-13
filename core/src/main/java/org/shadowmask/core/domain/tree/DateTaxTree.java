@@ -27,7 +27,7 @@ import org.shadowmask.core.domain.treeobj.TreeObject;
 import org.shadowmask.core.util.JsonUtil;
 import org.shadowmask.core.util.Rethrow;
 
-public class DateDomainTree extends ComparableDomainTree<Date> {
+public class DateTaxTree extends ComparableTaxTree<Date> {
 
   private String pattern = "yyyy-MM-dd";
 
@@ -55,9 +55,12 @@ public class DateDomainTree extends ComparableDomainTree<Date> {
     return date;
   }
 
-  public DateDomainTree withPattern(String pattern) {
+  public DateTaxTree withPattern(String pattern) {
     this.pattern = pattern;
     return this;
   }
 
+  public String getPattern() {
+    return pattern;
+  }
 }

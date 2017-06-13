@@ -1,0 +1,58 @@
+comparable: true
+type: string
+version: 1.0
+root:
+  - text: contry
+    children:
+      - text: United-States
+      - text: ?
+      - text: other
+        children:
+          - text: North America
+            children:
+              - text: Mexico
+              - text: Canada
+              - text: El-Salvador
+              - text: Dominican-Republic
+              - text: Guatemala
+              - text: Haiti
+              - text: Honduras
+              - text: Outlying-US(Guam-USVI-etc)
+          - text: South America
+            children:
+              - text: Cuba
+              - text: Jamaica
+              - text: Columbia
+              - text: Nicaragua
+              - text: Peru
+              - text: Trinadad&Tobago
+              - text: Ecuador
+          - text: Asia
+            children:
+              - text: Philippines
+              - text: Puerto-Rico
+              - text: India
+              - text: South
+              - text: China
+              - text: Vietnam
+              - text: Japan
+              - text: Taiwan
+              - text: Iran
+              - text: Hong
+              - text: Laos
+              - text: Cambodia
+              - text: Thailand
+          - text: Europe
+            children:
+              - text: Germany
+              - text: England
+              - text: Italy
+              - text: Poland
+              - text: Portugal
+              - text: Greece
+              - text: France
+              - text: Ireland
+              - text: Yugoslavia
+              - text: Scotland
+              - text: Hungary
+              - text: Holand-Netherlands

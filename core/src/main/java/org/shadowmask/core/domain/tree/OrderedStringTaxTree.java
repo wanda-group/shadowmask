@@ -18,12 +18,19 @@
 package org.shadowmask.core.domain.tree;
 
 import com.google.gson.Gson;
+import java.util.Iterator;
 import java.util.List;
 import org.shadowmask.core.domain.treeobj.StringTreeObject;
 import org.shadowmask.core.domain.treeobj.TreeObject;
 import org.shadowmask.core.util.JsonUtil;
 
-public class OrderedStringDomainTree extends ComparableDomainTree<String> {
+public class OrderedStringTaxTree extends ComparableTaxTree<String> {
+  public static StrictComparator STRICT_COMPARE = new StrictComparator();
+  public static PrefixComparator PREFIX_COMPARE = new PrefixComparator();
+  public static CombineFromRootWithSeparatorComparator ROOT_COMBINE_COMPARE =
+      new CombineFromRootWithSeparatorComparator();
+  private StringNodeComparator comparator = STRICT_COMPARE;
+
   @Override protected TreeObject<String> constructTreeObject(String json) {
     Gson gson = JsonUtil.newGsonInstance();
     StringTreeObject obj = gson.fromJson(json, StringTreeObject.class);
@@ -31,54 +38,54 @@ public class OrderedStringDomainTree extends ComparableDomainTree<String> {
   }
 
   @Override protected int leafCompareValue(
-      ComparableDomainTreeNode<String> leaf, String value) {
+      ComparableTaxTreeNode<String> leaf, String value) {
     return comparator.compare(leaf, value);
   }
 
-  private StringNodeComparator comparator = STRICT_COMPARE;
-
-  public OrderedStringDomainTree withComparator(
+  public OrderedStringTaxTree withComparator(
       StringNodeComparator comparator) {
     this.comparator = comparator;
     return this;
   }
 
-  @Override public void onRelationBuilt(ComparableDomainTreeNode<String> parent,
-      List<ComparableDomainTreeNode<String>> children) {
+  @Override public void buildFromSortedValues(
+      Iterator<String> sortedValuesIterator, int totCount, int bottomLevelSize,
+      int[] levelScale) {
+    throw new RuntimeException(
+        "not support buildFromSortedValues in ordered String DTree ");
+  }
+
+  @Override public void onRelationBuilt(ComparableTaxTreeNode<String> parent,
+      List<ComparableTaxTreeNode<String>> children) {
 
   }
 
-  @Override public int compare(ComparableDomainTreeNode<String> node1,
-      ComparableDomainTreeNode<String> node2) {
+  @Override public int compare(ComparableTaxTreeNode<String> node1,
+      ComparableTaxTreeNode<String> node2) {
     return this.comparator.compare(node1, node2);
   }
 
-  public static StrictComparator STRICT_COMPARE = new StrictComparator();
-  public static PrefixComparator PREFIX_COMPARE = new PrefixComparator();
-  public static CombineFromRootWithSeparatorComparator ROOT_COMBINE_COMPARE =
-      new CombineFromRootWithSeparatorComparator();
-
   static interface StringNodeComparator {
-    int compare(ComparableDomainTreeNode<String> leaf, String value);
+    int compare(ComparableTaxTreeNode<String> leaf, String value);
 
-    int compare(ComparableDomainTreeNode<String> leaf,
-        ComparableDomainTreeNode<String> leaf1);
+    int compare(ComparableTaxTreeNode<String> leaf,
+        ComparableTaxTreeNode<String> leaf1);
   }
 
-  static class StrictComparator implements StringNodeComparator {
-    @Override public int compare(ComparableDomainTreeNode<String> leaf,
+  public static class StrictComparator implements StringNodeComparator {
+    @Override public int compare(ComparableTaxTreeNode<String> leaf,
         String value) {
       return leaf.getName().compareTo(value);
     }
 
-    @Override public int compare(ComparableDomainTreeNode<String> leaf,
-        ComparableDomainTreeNode<String> leaf1) {
+    @Override public int compare(ComparableTaxTreeNode<String> leaf,
+        ComparableTaxTreeNode<String> leaf1) {
       return this.compare(leaf, leaf1.getName());
     }
   }
 
-  static class PrefixComparator implements StringNodeComparator {
-    @Override public int compare(ComparableDomainTreeNode<String> leaf,
+  public static class PrefixComparator implements StringNodeComparator {
+    @Override public int compare(ComparableTaxTreeNode<String> leaf,
         String value) {
       int len = leaf.getName().length() < value.length()
           ? leaf.getName().length()
@@ -87,18 +94,22 @@ public class OrderedStringDomainTree extends ComparableDomainTree<String> {
           .compareTo(value.substring(0, len));
     }
 
-    @Override public int compare(ComparableDomainTreeNode<String> leaf,
-        ComparableDomainTreeNode<String> leaf1) {
+    @Override public int compare(ComparableTaxTreeNode<String> leaf,
+        ComparableTaxTreeNode<String> leaf1) {
       return this.compare(leaf, leaf1.getName());
     }
   }
 
-  static class CombineFromRootWithSeparatorComparator
+  public static class CombineFromRootWithSeparatorComparator
       implements StringNodeComparator {
 
     private String separator = ",";
 
-    @Override public int compare(ComparableDomainTreeNode<String> leaf,
+    public static CombineFromRootWithSeparatorComparator newInstance() {
+      return new CombineFromRootWithSeparatorComparator();
+    }
+
+    @Override public int compare(ComparableTaxTreeNode<String> leaf,
         String value) {
       String res = fullValue(leaf);
       if (res.length() > value.length()) {
@@ -108,17 +119,17 @@ public class OrderedStringDomainTree extends ComparableDomainTree<String> {
       return res.substring(0, len).compareTo(value.substring(0, len));
     }
 
-    @Override public int compare(ComparableDomainTreeNode<String> leaf,
-        ComparableDomainTreeNode<String> leaf1) {
+    @Override public int compare(ComparableTaxTreeNode<String> leaf,
+        ComparableTaxTreeNode<String> leaf1) {
       return fullValue(leaf).compareTo(fullValue(leaf1));
     }
 
-    private String fullValue(ComparableDomainTreeNode<String> leaf) {
+    private String fullValue(ComparableTaxTreeNode<String> leaf) {
       String res = "";
-      ComparableDomainTreeNode<String> pointer = leaf;
+      ComparableTaxTreeNode<String> pointer = leaf;
       while (pointer.getParent() != null) {
         res = separator + pointer.getName() + res;
-        pointer = pointer.getParent();
+        pointer = (ComparableTaxTreeNode<String>) pointer.getParent();
       }
       res = pointer.getName() + res;
       return res;

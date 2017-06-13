@@ -27,8 +27,8 @@ import org.shadowmask.core.mask.rules.generalizer.Generalizer;
 import org.shadowmask.engine.spark.Rethrow;
 import org.shadowmask.engine.spark.autosearch.Executable;
 import org.shadowmask.engine.spark.autosearch.pso.cluster.ClusterMkVelocityCalculator;
-import org.shadowmask.engine.spark.autosearch.pso.cluster.DtreeClusterMkPosition;
-import org.shadowmask.engine.spark.autosearch.pso.cluster.DtreeClusterMkVelocity;
+import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkPosition;
+import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkVelocity;
 
 /**
  * user pso search a solution of data mask
@@ -69,13 +69,13 @@ public class KAnonymityPsoSearch
       // generate particles randomly
       MkParticle particle = new MkParticle() {
         @Override public MkPosition randomPosition() {
-          MkPosition mkPosition = new DtreeClusterMkPosition();
+          MkPosition mkPosition = new TaxTreeClusterMkPosition();
           mkPosition.init();
           return mkPosition;
         }
 
         @Override public MkVelocity randomVelocity() {
-          MkVelocity mkVelocity = new DtreeClusterMkVelocity();
+          MkVelocity mkVelocity = new TaxTreeClusterMkVelocity();
           mkVelocity.init();
           return mkVelocity;
         }

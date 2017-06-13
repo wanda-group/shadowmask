@@ -18,6 +18,8 @@
 
 package org.shadowmask.core.mask.rules.generalizer;
 
+import java.io.Serializable;
+
 /**
  * Generalization is the most common method to anonymize data. By masking part of the information
  * in data, different data can be masked into same group, so that they can not be re-identified
@@ -26,7 +28,7 @@ package org.shadowmask.core.mask.rules.generalizer;
  * @param <IN> input data type.
  * @param <OUT> output data type.
  */
-public interface Generalizer<IN, OUT> {
+public interface Generalizer<IN, OUT> extends Serializable {
 
   /**
    * Generalize the input data at specified mask level.

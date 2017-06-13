@@ -3,14 +3,14 @@ package org.shadowmask.core.domain.tree;
 /**
  * Comparable domain  node like age , salary etc.
  */
-public class ComparableDomainNode<T extends Comparable<T>>
-    extends DomainTreeNode implements Comparable<ComparableDomainNode<T>> {
+public class ComparableTaxNode<T extends Comparable<T>>
+    extends TaxTreeNode implements Comparable<ComparableTaxNode<T>> {
 
   private T lowerBound;
 
   private T higherBound;
 
-  @Override public int compareTo(ComparableDomainNode<T> o) {
+  @Override public int compareTo(ComparableTaxNode<T> o) {
     return this.getLowerBound().compareTo(o.getLowerBound());
   }
 

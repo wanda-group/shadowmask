@@ -15,17 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.domain.tree;
+package org.shadowmask.core.mask.rules.generalizer.functions;
 
-import com.google.gson.Gson;
-import org.shadowmask.core.domain.treeobj.IntegerTreeObject;
-import org.shadowmask.core.domain.treeobj.TreeObject;
-import org.shadowmask.core.util.JsonUtil;
+import java.io.Serializable;
 
-public class IntegerDomainTree extends ComparableDomainTree<Integer> {
-  @Override protected TreeObject<Integer> constructTreeObject(String json) {
-    Gson gson = JsonUtil.newGsonInstance();
-    IntegerTreeObject obj = gson.fromJson(json, IntegerTreeObject.class);
-    return obj;
-  }
+public interface Function<IN, OUT> extends Serializable {
+  OUT apply(IN input);
 }

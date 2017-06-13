@@ -17,24 +17,47 @@
  */
 package org.shadowmask.core.mask.rules.generalizer.actor;
 
-import org.shadowmask.core.domain.tree.DomainTreeNode;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.domain.tree.LeafLocator;
+import org.shadowmask.core.mask.rules.generalizer.functions.Function;
+import org.shadowmask.core.util.ClassUtil;
+import org.shadowmask.core.util.Predictor;
 
-public abstract class DTreeGeneralizerActor<IN, OUT>
+public class TaxTreeGeneralizerActor<IN, OUT>
     implements GeneralizerActor<IN, OUT> {
 
   private int level;
   private int maxLevel = Integer.MAX_VALUE;
   private int minLevel = 0;
-  private LeafLocator<IN, DomainTreeNode> dTree;
+
+  private Function<TaxTreeNode, OUT> resultParser =
+      new Function<TaxTreeNode, OUT>() {
+        @Override public OUT apply(TaxTreeNode input) {
+          return (OUT) input.getName();
+        }
+      };
+
+  private Function<IN, OUT> inputPaser = new Function<IN, OUT>() {
+    @Override public OUT apply(IN input) {
+      return (OUT) input.toString();
+    }
+  };
+
+  private LeafLocator<IN> dTree;
 
   @Override public OUT generalize(IN in) {
-    DomainTreeNode leaf = dTree.locate(in);
+    TaxTreeNode leaf = dTree.locate(in);
     if (leaf == null) {
-      return null;
+      return inputPaser.apply(in);
     }
-    DomainTreeNode pointer = leaf;
-    for (int i = Math.max(0, minLevel); i < Math.min(maxLevel, level); ++i) {
+
+    if (level == 0) {
+      return inputPaser.apply(in);
+    }
+
+    TaxTreeNode pointer = leaf;
+    for (int i = Math.max(0, minLevel); i < Math.min(maxLevel, level - 1);
+        ++i) {
       if (pointer.getParent() != null) {
         pointer = pointer.getParent();
       } else {
@@ -45,7 +68,10 @@ public abstract class DTreeGeneralizerActor<IN, OUT>
 
   }
 
-  public abstract DTreeGeneralizerActor<IN, OUT> newInstance();
+  public TaxTreeGeneralizerActor<IN, OUT> newInstance() {
+    return ClassUtil.<TaxTreeGeneralizerActor<IN, OUT>>cast(
+        ClassUtil.clone(this));
+  }
 
   public int getLevel() {
     return level;
@@ -55,7 +81,7 @@ public abstract class DTreeGeneralizerActor<IN, OUT>
     this.level = level;
   }
 
-  public DTreeGeneralizerActor<IN, OUT> updateLevel(int deltaLevel) {
+  public TaxTreeGeneralizerActor<IN, OUT> updateLevel(int deltaLevel) {
     this.level = this.level + deltaLevel;
     if (this.level > this.maxLevel) {
       this.level = this.maxLevel;
@@ -65,18 +91,32 @@ public abstract class DTreeGeneralizerActor<IN, OUT>
     return this;
   }
 
-  public DTreeGeneralizerActor<IN, OUT> withLevel(int level) {
+  public TaxTreeGeneralizerActor<IN, OUT> withLevel(int level) {
     this.level = level;
     return this;
   }
 
-  public DTreeGeneralizerActor<IN, OUT> withDTree(
-      LeafLocator<IN, DomainTreeNode> dTree) {
+  public TaxTreeGeneralizerActor<IN, OUT> withDTree(LeafLocator<IN> dTree) {
     this.dTree = dTree;
     return this;
   }
 
-  protected abstract OUT parseNode(DomainTreeNode tnode);
+  public TaxTreeGeneralizerActor<IN, OUT> withResultParser(
+      Function<TaxTreeNode, OUT> parser) {
+    this.resultParser = parser;
+    return this;
+  }
+
+  public TaxTreeGeneralizerActor<IN, OUT> withInputParser(
+      Function<IN, OUT> parser) {
+    this.inputPaser = parser;
+    return this;
+  }
+
+  protected OUT parseNode(TaxTreeNode tnode) {
+    Predictor.predict(this.resultParser != null, "result parser can't be null");
+    return this.resultParser.apply(tnode);
+  }
 
   public int getMaxLevel() {
     return maxLevel;
@@ -94,11 +134,11 @@ public abstract class DTreeGeneralizerActor<IN, OUT>
     this.minLevel = minLevel;
   }
 
-  public LeafLocator<IN, DomainTreeNode> getdTree() {
+  public LeafLocator<IN> getdTree() {
     return dTree;
   }
 
-  public void setdTree(LeafLocator<IN, DomainTreeNode> dTree) {
+  public void setdTree(LeafLocator<IN> dTree) {
     this.dTree = dTree;
   }
 }

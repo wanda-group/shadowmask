@@ -17,6 +17,6 @@
  */
 package org.shadowmask.core.domain.tree;
 
-public interface LeafLocator<T, TNODE extends DomainTreeNode> {
-  TNODE locate(T t);
+public interface LeafLocator<T> {
+  TaxTreeNode locate(T t);
 }

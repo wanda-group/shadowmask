@@ -9,7 +9,7 @@ import org.shadowmask.core.mask.rules.generalizer.impl.DomainTreeGeneralizer;
 public class TestDomainTreeGeneralizer
     extends DomainTreeGeneralizer<String, String, TestTreeNode> {
 
-  public DomainTestTree tree = new DomainTestTree();
+  public TaxTestTree tree = new TaxTestTree();
   public Map<String, TestTreeNode> nodeMap = new HashMap<>();
 
   {

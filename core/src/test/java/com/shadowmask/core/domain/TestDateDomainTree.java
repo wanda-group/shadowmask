@@ -22,8 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.junit.Assert;
 import org.junit.Test;
-import org.shadowmask.core.domain.tree.ComparableDomainTree.ComparableDomainTreeNode;
-import org.shadowmask.core.domain.tree.DateDomainTree;
+import org.shadowmask.core.domain.tree.ComparableTaxTree.ComparableTaxTreeNode;
+import org.shadowmask.core.domain.tree.DateTaxTree;
 
 public class TestDateDomainTree {
 
@@ -31,9 +31,9 @@ public class TestDateDomainTree {
   public void test() throws ParseException {
     String pattern = "yyyy/MM/dd";
     SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-    DateDomainTree tree = new DateDomainTree().withPattern(pattern);
+    DateTaxTree tree = new DateTaxTree().withPattern(pattern);
     tree.constructFromYamlInputStream(this.getClass().getClassLoader().getResourceAsStream("Interval-Date-Mask.yaml"));
-    ComparableDomainTreeNode<Date> node = tree.fixALeaf(sdf.parse("1999/09/01"));
+    ComparableTaxTreeNode<Date> node = tree.fixALeaf(sdf.parse("1999/09/01"));
     Assert.assertNotNull(node);
   }
 }

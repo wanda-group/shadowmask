@@ -1,12 +1,13 @@
 package org.shadowmask.core.domain.tree;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * domain tree node
  */
-public class DomainTreeNode<N extends DomainTreeNode> {
+public class TaxTreeNode implements Serializable {
 
   private static AtomicInteger cnt = new AtomicInteger(0);
 
@@ -14,13 +15,13 @@ public class DomainTreeNode<N extends DomainTreeNode> {
 
   private String name;
 
-  private transient N parent;
+  private transient TaxTreeNode parent;
 
-  private List<N> children;
+  private List<? extends TaxTreeNode> children;
 
   private int depth;
 
-  public DomainTreeNode() {
+  public TaxTreeNode() {
     id = cnt.incrementAndGet();
   }
 
@@ -32,19 +33,19 @@ public class DomainTreeNode<N extends DomainTreeNode> {
     this.name = name;
   }
 
-  public N getParent() {
+  public TaxTreeNode getParent() {
     return parent;
   }
 
-  public void setParent(N parent) {
+  public void setParent(TaxTreeNode parent) {
     this.parent = parent;
   }
 
-  public List<N> getChildren() {
+  public List<? extends TaxTreeNode> getChildren() {
     return children;
   }
 
-  public void setChildren(List<N> children) {
+  public void setChildren(List<? extends TaxTreeNode> children) {
     this.children = children;
   }
 
@@ -66,7 +67,7 @@ public class DomainTreeNode<N extends DomainTreeNode> {
 
   @Override public String toString() {
     String res = "";
-    DomainTreeNode pointer = this;
+    TaxTreeNode pointer = this;
     while (pointer.getParent() != null) {
       res = "->" + pointer.getName() + res;
       pointer = pointer.getParent();
@@ -83,7 +84,7 @@ public class DomainTreeNode<N extends DomainTreeNode> {
       return false;
     }
 
-    DomainTreeNode<?> that = (DomainTreeNode<?>) o;
+    TaxTreeNode that = (TaxTreeNode) o;
 
     return id == that.id;
   }

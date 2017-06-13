@@ -17,10 +17,10 @@
  */
 package org.shadowmask.core.mask.rules.generalizer.impl;
 
-import org.shadowmask.core.domain.tree.DomainTreeNode;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.mask.rules.generalizer.Generalizer;
 
-public abstract class DomainTreeGeneralizer<T, R, TNODE extends DomainTreeNode<TNODE>>
+public abstract class DomainTreeGeneralizer<T, R, TNODE extends TaxTreeNode>
     implements Generalizer<T, R> {
   @Override public R generalize(T t, int level) {
     TNODE leaf = fixLeaf(t);
@@ -30,7 +30,7 @@ public abstract class DomainTreeGeneralizer<T, R, TNODE extends DomainTreeNode<T
     for (int i = Math.max(0, minLevel()); i < Math.min(level, maxLevel());
         ++i) {
       if (leaf.getParent() != null) {
-        leaf = leaf.getParent();
+        leaf = (TNODE) leaf.getParent();
       } else {
         break;
       }

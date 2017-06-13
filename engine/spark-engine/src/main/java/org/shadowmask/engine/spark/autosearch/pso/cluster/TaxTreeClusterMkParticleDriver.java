@@ -18,37 +18,37 @@
 package org.shadowmask.engine.spark.autosearch.pso.cluster;
 
 import java.util.Map.Entry;
-import org.shadowmask.core.domain.tree.DomainTreeNode;
-import org.shadowmask.core.mask.rules.generalizer.actor.DTreeGeneralizerActor;
-import org.shadowmask.core.mask.rules.generalizer.actor.DtreeClusterGeneralizerActor;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
 import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
 import org.shadowmask.core.util.ClassUtil;
 import org.shadowmask.engine.spark.autosearch.pso.MkParticle;
 import org.shadowmask.engine.spark.autosearch.pso.MkParticleDriver;
 import org.shadowmask.engine.spark.autosearch.pso.MkVelocity;
-import org.shadowmask.engine.spark.autosearch.pso.cluster.DtreeClusterMkVelocity.Dimension;
+import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkVelocity.Dimension;
 
-public class DtreeClusterMkParticleDriver implements MkParticleDriver {
+public class TaxTreeClusterMkParticleDriver implements MkParticleDriver {
 
   @Override public void drive(MkParticle pa, MkVelocity v) {
-    DtreeClusterMkVelocity velocity = ClassUtil.cast(v);
+    TaxTreeClusterMkVelocity velocity = ClassUtil.cast(v);
     GeneralizerActor[] actors = pa.currentPosition().getGeneralizerActors();
 
     for (int i = 0; i < actors.length; i++) {
-      DtreeClusterGeneralizerActor dtActor = ClassUtil.cast(actors[i]);
+      TaxTreeClusterGeneralizerActor dtActor = ClassUtil.cast(actors[i]);
       Dimension dimension = velocity.getDimensions()[i];
       // update master
-      DTreeGeneralizerActor masterActor =
-          ClassUtil.<DTreeGeneralizerActor>cast(dtActor.getMasterGeneralizer())
+      TaxTreeGeneralizerActor masterActor =
+          ClassUtil.<TaxTreeGeneralizerActor>cast(dtActor.getMasterGeneralizer())
               .updateLevel(dimension.getMasterDeltaLevel());
 
-      for (Entry<DomainTreeNode, Integer> kv : dimension.getSlaveDeltaLevelMap()
+      for (Entry<TaxTreeNode, Integer> kv : dimension.getSlaveDeltaLevelMap()
           .entrySet()) {
-        DTreeGeneralizerActor actor =
+        TaxTreeGeneralizerActor actor =
             ClassUtil.cast(dtActor.getSlaveMap().get(kv.getKey()));
         if (actor == null) {
           // generate a new special search node
-          DTreeGeneralizerActor newActor = masterActor.newInstance();
+          TaxTreeGeneralizerActor newActor = masterActor.newInstance();
           newActor.setdTree(masterActor.getdTree());
           newActor.setMaxLevel(masterActor.getMaxLevel());
           newActor.setMinLevel(masterActor.getMinLevel());
