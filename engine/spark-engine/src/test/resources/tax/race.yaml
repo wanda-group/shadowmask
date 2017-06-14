@@ -2,7 +2,7 @@ comparable: true
 type: string
 version: 1.0
 root:
-  text: race
+  text: '*'
   children:
     - text: white
     - text: color

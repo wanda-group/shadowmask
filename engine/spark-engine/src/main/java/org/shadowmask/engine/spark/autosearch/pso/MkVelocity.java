@@ -22,28 +22,12 @@ import org.shadowmask.core.algorithms.pso.Velocity;
 /**
  * pso velocity
  */
-public class MkVelocity implements Velocity {
+public abstract class MkVelocity implements Velocity {
 
-  /**
-   * array of delta generalization level
-   */
-  private int[] velocity;
+  public void init(){
 
-  public MkVelocity(int size) {
-    this.velocity = new int[size];
   }
 
-  public MkVelocity() {
-  }
+  public abstract int dimension();
 
-  public void init() {
-  }
-
-  public int[] getVelocity() {
-    return velocity;
-  }
-
-  public void setVelocity(int[] velocity) {
-    this.velocity = velocity;
-  }
 }

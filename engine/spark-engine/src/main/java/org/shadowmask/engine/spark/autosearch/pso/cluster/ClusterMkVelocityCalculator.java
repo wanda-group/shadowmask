@@ -19,16 +19,14 @@
 package org.shadowmask.engine.spark.autosearch.pso.cluster;
 
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import org.shadowmask.core.domain.tree.LeafLocator;
 import org.shadowmask.core.domain.tree.TaxTree;
 import org.shadowmask.core.domain.tree.TaxTreeNode;
-import org.shadowmask.core.domain.tree.LeafLocator;
-import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
-import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
 import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
 import org.shadowmask.core.util.ClassUtil;
 import org.shadowmask.core.util.Predictor;
 import org.shadowmask.engine.spark.autosearch.pso.MkPosition;
@@ -36,13 +34,13 @@ import org.shadowmask.engine.spark.autosearch.pso.MkVelocity;
 import org.shadowmask.engine.spark.autosearch.pso.MkVelocityCalculator;
 import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkVelocity.Dimension;
 
-public class ClusterMkVelocityCalculator extends MkVelocityCalculator {
+public abstract class ClusterMkVelocityCalculator extends MkVelocityCalculator {
   @Override public double randomSearchRate() {
-    return 0.01;
+    return 0.05;
   }
 
   @Override public boolean isZERO(Double number) {
-    return number * 1000000 != 0;
+    return number * 1000000 == 0;
   }
 
   @Override protected MkVelocity calcVelocity(Double stayRate, Double lsRate,
@@ -75,9 +73,9 @@ public class ClusterMkVelocityCalculator extends MkVelocityCalculator {
         .getGeneralizerActors().length, "Dimension not match");
 
     TaxTreeClusterMkVelocity velocity = new TaxTreeClusterMkVelocity();
-    int d = currentV.getVelocity().length;
+    int d = currentV.getSize();
     velocity.setDimensions(new Dimension[d]);
-
+    velocity.setSize(d);
     for (int i = 0; i < d; i++) {
       velocity.getDimensions()[i] = newDimension(currentV.getDimensions()[i],
           ClassUtil.<TaxTreeClusterGeneralizerActor>cast(
@@ -154,19 +152,13 @@ public class ClusterMkVelocityCalculator extends MkVelocityCalculator {
     return dimension;
   }
 
-  private Double learnedNewValue(Double currentVelocity, Double currentValue,
-      Double historyBestValue, Double globalBestValue, LearnParameters p) {
-    return p.stayRate * currentVelocity + p.lsRate * p.lsRandomScale * (
-        historyBestValue - currentValue) + p.loRate * p.loRandomScale * (
-        globalBestValue - currentValue);
-  }
+  protected abstract Double learnedNewValue(Double currentVelocity,
+      Double currentValue, Double historyBestValue, Double globalBestValue,
+      LearnParameters p);
 
-  private Double learnedNewValue(Integer currentVelocity, Integer currentValue,
-      Integer historyBestValue, Integer globalBestValue, LearnParameters p) {
-    return p.stayRate * currentVelocity + p.lsRate * p.lsRandomScale * (
-        historyBestValue - currentValue) + p.loRate * p.loRandomScale * (
-        globalBestValue - currentValue);
-  }
+  protected abstract Double learnedNewValue(Integer currentVelocity,
+      Integer currentValue, Integer historyBestValue, Integer globalBestValue,
+      LearnParameters p);
 
   /**
    * generate a velocity randomly
@@ -178,18 +170,20 @@ public class ClusterMkVelocityCalculator extends MkVelocityCalculator {
     Predictor.predict(currentPosition instanceof TaxTreeClusterMkPosition,
         "type not math");
 
-    TaxTreeClusterMkPosition curPos = (TaxTreeClusterMkPosition) currentPosition;
+    TaxTreeClusterMkPosition curPos =
+        (TaxTreeClusterMkPosition) currentPosition;
     GeneralizerActor[] actors = curPos.getGeneralizerActors();
     Predictor.predict(actors != null && actors.length > 0,
         "generalizer actors should be null or empty array");
 
     TaxTreeClusterMkVelocity velocity = new TaxTreeClusterMkVelocity();
-    TaxTreeClusterMkVelocity.Dimension[] dimensions =
-        new Dimension[actors.length];
+    Dimension[] dimensions = new Dimension[actors.length];
+    velocity.setSize(actors.length);
     for (int i = 0; i < actors.length; i++) {
       dimensions[i] = randomDimension(
           ClassUtil.<TaxTreeClusterGeneralizerActor>cast(actors[i]));
     }
+    velocity.setDimensions(dimensions);
     return velocity;
   }
 
@@ -202,56 +196,66 @@ public class ClusterMkVelocityCalculator extends MkVelocityCalculator {
 
     TaxTreeGeneralizerActor masterActor = (TaxTreeGeneralizerActor) generalizer;
 
-    int randomMasterLevel = new Random()
-        .nextInt(masterActor.getMaxLevel() + 1 - masterActor.getMinLevel())
-        - masterActor.getLevel();
+    //    int randomMasterLevel = new Random()
+    //        .nextInt(masterActor.getMaxLevel() + 1 - masterActor.getMinLevel())
+    //        - masterActor.getLevel();
+
+    int randomMasterLevel =
+        randomLevel(masterActor.getMaxLevel(), masterActor.getMinLevel(),
+            masterActor.getLevel());
 
     dimension.setMasterDeltaLevel(randomMasterLevel);
 
     // slave actors
-    Map<TaxTreeNode, GeneralizerActor> slaveMap = actor.getSlaveMap();
-    for (Entry<TaxTreeNode, GeneralizerActor> kv : slaveMap.entrySet()) {
-      Predictor.predict(kv.getValue() instanceof TaxTreeGeneralizerActor,
-          "actor type not match");
-      TaxTreeGeneralizerActor slaveActor = (TaxTreeGeneralizerActor) kv.getValue();
-      randomMasterLevel = new Random()
-          .nextInt(slaveActor.getMaxLevel() + 1 - slaveActor.getMinLevel())
-          - slaveActor.getLevel();
-      dimension.getSlaveDeltaLevelMap().put(kv.getKey(), randomMasterLevel);
-    }
+    //    Map<TaxTreeNode, GeneralizerActor> slaveMap = actor.getSlaveMap();
+    //    for (Entry<TaxTreeNode, GeneralizerActor> kv : slaveMap.entrySet()) {
+    //      Predictor.predict(kv.getValue() instanceof TaxTreeGeneralizerActor,
+    //          "actor type not match");
+    //      TaxTreeGeneralizerActor slaveActor =
+    //          (TaxTreeGeneralizerActor) kv.getValue();
+    //      randomMasterLevel = new Random()
+    //          .nextInt(slaveActor.getMaxLevel() + 1 - slaveActor.getMinLevel())
+    //          - slaveActor.getLevel();
+    //      dimension.getSlaveDeltaLevelMap().put(kv.getKey(), randomMasterLevel);
+    //    }
 
     // random select dimension
     LeafLocator tree = actor.getTree();
     Predictor.predict(tree instanceof TaxTree, "domain tree not match");
     TaxTree dTree = (TaxTree) tree;
-    int index = new Random().nextInt(dTree.getLeaves().size());
+    //    int num = new Random().nextInt(dTree.getLeaves().size());
+    int num = dTree.getLeaves().size();
 
-    TaxTreeNode node = (TaxTreeNode) dTree.getLeaves().get(index);
-    int velocity = new Random()
-        .nextInt(masterActor.getMaxLevel() + 1 - masterActor.getMinLevel())
-        - masterActor.getLevel();
-    if (velocity != masterActor.getLevel()) {
+    for (int index = 0; index < num; index++) {
+
+      double rate = new Random().nextDouble();
+      if (rate > randomMutationRate()) {
+        continue;
+      }
+
+      int currentLevel = masterActor.getLevel();
+
+      TaxTreeNode node = (TaxTreeNode) dTree.getLeaves().get(index);
+      if (dimension.getSlaveDeltaLevelMap().get(node) != null) {
+        currentLevel = ((TaxTreeGeneralizerActor) actor.getSlaveMap().get(node))
+            .getLevel();
+      }
+      //      int velocity = new Random()
+      //          .nextInt(masterActor.getMaxLevel() + 1 - masterActor.getMinLevel())
+      //          - masterActor.getLevel();
+      int velocity =
+          randomLevel(masterActor.getMaxLevel(), masterActor.getMaxLevel(),
+              currentLevel);
       dimension.getSlaveDeltaLevelMap().put(node, velocity);
     }
+
     return dimension;
   }
 
-  class LearnParameters {
-    public Double stayRate;
-    public Double lsRate;
-    public Double lsRandomScale;
+  public abstract double randomMutationRate();
 
-    public Double loRate;
-
-    public Double loRandomScale;
-
-    public LearnParameters(Double stayRate, Double lsRate, Double lsRandomScale,
-        Double loRate, Double loRandomScale) {
-      this.stayRate = stayRate;
-      this.lsRate = lsRate;
-      this.lsRandomScale = lsRandomScale;
-      this.loRate = loRate;
-      this.loRandomScale = loRandomScale;
-    }
+  protected int randomLevel(int highBound, int lowBound, int currentLevel) {
+    return new Random().nextInt(highBound + 1 - lowBound) - currentLevel;
   }
+
 }

@@ -23,10 +23,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.spark.rdd.RDD;
+import org.shadowmask.core.util.Rethrow;
 import org.shadowmask.engine.spark.autosearch.Executable;
 import org.shadowmask.engine.spark.autosearch.Segment;
 
-public class MkFitnessCalculator {
+public abstract class MkFitnessCalculator<TABLE> {
 
   private int threadNums;
 
@@ -37,9 +38,13 @@ public class MkFitnessCalculator {
     executor = Executors.newFixedThreadPool(threadNums);
   }
 
+  public void shutdownExecutor(){
+    this.executor.shutdown();
+  }
+
   public void calculateFitness(final List<MkParticle> particles,
       final Map<MkParticle, MkFitness> fitnessMap, final Object waitObject,
-      final RDD<String> dataSet) {
+      final TABLE dataSet) {
 
     final AtomicInteger count = new AtomicInteger(0);
     for (final MkParticle particle : particles) {
@@ -48,11 +53,13 @@ public class MkFitnessCalculator {
           fitnessMap.put(particle, calculateOne(particle, dataSet));
         }
       };
-      executable.registerAfterSegment(new Segment() {
+      executable.registerFinallySegment(new Segment() {
         @Override public void run() {
-          count.incrementAndGet();
-          if (count.get() == particles.size()) {
-            waitObject.notify();
+          synchronized (waitObject){
+            count.incrementAndGet();
+            if (count.get() == particles.size()) {
+              waitObject.notify();
+            }
           }
         }
 
@@ -60,12 +67,19 @@ public class MkFitnessCalculator {
           // do nothing
         }
       });
+      executable.registerExceptionSegment(new Segment<Exception>() {
+        @Override public void run() {
+          // do nothing
+        }
+
+        @Override public void attach(Exception e) {
+          e.printStackTrace();
+          Rethrow.rethrow(e);
+        }
+      });
       this.executor.submit(executable);
     }
   }
 
-  MkFitness calculateOne(MkParticle particle, RDD<String> dataSet) {
-    return null;
-  }
-
+  public abstract MkFitness calculateOne(MkParticle particle, TABLE dataSet) ;
 }

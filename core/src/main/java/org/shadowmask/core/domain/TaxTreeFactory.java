@@ -18,14 +18,14 @@
 package org.shadowmask.core.domain;
 
 import org.shadowmask.core.domain.tree.DateTaxTree;
-import org.shadowmask.core.domain.tree.StringTaxTree;
+import org.shadowmask.core.domain.tree.CategoryTaxTree;
 import org.shadowmask.core.domain.tree.TaxTree;
 import org.shadowmask.core.domain.tree.DoubleTaxTree;
 import org.shadowmask.core.domain.tree.IntegerTaxTree;
 import org.shadowmask.core.domain.tree.OrderedStringTaxTree;
 import org.shadowmask.core.data.DataType;
 
-public class DTreeFactory {
+public class TaxTreeFactory {
 
   public static <T extends TaxTree> T getTree(DataType dataType) {
     TaxTree tree = null;
@@ -43,7 +43,7 @@ public class DTreeFactory {
       tree = new OrderedStringTaxTree();
       break;
     case STRING:
-      tree = new StringTaxTree();
+      tree = new CategoryTaxTree();
       break;
     default:
       throw new RuntimeException("data type not support");

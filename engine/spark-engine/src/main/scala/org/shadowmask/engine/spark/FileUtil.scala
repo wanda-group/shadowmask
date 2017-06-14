@@ -15,22 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.domain.tree;
 
-import com.google.gson.Gson;
-import org.shadowmask.core.data.DataType;
-import org.shadowmask.core.domain.treeobj.DoubleTreeObject;
-import org.shadowmask.core.domain.treeobj.TreeObject;
-import org.shadowmask.core.util.JsonUtil;
+package org.shadowmask.engine.spark
 
-public class DoubleTaxTree extends ComparableTaxTree<Double> {
-  @Override protected TreeObject<Double> constructTreeObject(String json) {
-    Gson gson = JsonUtil.newGsonInstance();
-    DoubleTreeObject obj = gson.fromJson(json, DoubleTreeObject.class);
-    return obj;
+import java.io.{File, FileWriter}
+
+
+object FileUtil {
+
+  def append(file:String,content:String):Unit = {
+    val writer = new FileWriter(new File(file),true)
+    writer.write(content)
+    writer.close()
   }
 
-  @Override public DataType dataType() {
-    return DataType.DECIMAL;
-  }
+
 }

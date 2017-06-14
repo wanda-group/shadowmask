@@ -28,7 +28,9 @@ public abstract class MkVelocityCalculator
 
   public abstract double randomSearchRate();
 
-  public abstract boolean isZERO(Double number);
+  public boolean isZERO(Double number) {
+    return number * 1000000 == 0;
+  }
 
   @Override public MkVelocity newVelocity(MkVelocity currentV,
       MkPosition currentPosition, MkFitness currentFitness,
@@ -116,6 +118,23 @@ public abstract class MkVelocityCalculator
     double learnOther = 1 - selfLearnRate;
     return new Quintet<>(stayRate, selfLearnRate, Math.random(), learnOther,
         Math.random());
+  }
+
+  protected class LearnParameters {
+    public Double stayRate;
+    public Double lsRate;
+    public Double lsRandomScale;
+    public Double loRate;
+    public Double loRandomScale;
+
+    public LearnParameters(Double stayRate, Double lsRate, Double lsRandomScale,
+        Double loRate, Double loRandomScale) {
+      this.stayRate = stayRate;
+      this.lsRate = lsRate;
+      this.lsRandomScale = lsRandomScale;
+      this.loRate = loRate;
+      this.loRandomScale = loRandomScale;
+    }
   }
 
 }

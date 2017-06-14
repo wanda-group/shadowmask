@@ -2,7 +2,7 @@ comparable: true
 type: string
 version: 1.0
 root:
-  text: secret
+  text: '*'
   children:
     - text: Female
     - text: Male

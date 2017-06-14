@@ -17,11 +17,14 @@
  */
 package org.shadowmask.engine.spark.autosearch.pso.cluster;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 import org.shadowmask.core.domain.tree.TaxTreeNode;
-import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
-import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
 import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
 import org.shadowmask.core.util.ClassUtil;
 import org.shadowmask.engine.spark.autosearch.pso.MkParticle;
 import org.shadowmask.engine.spark.autosearch.pso.MkParticleDriver;
@@ -39,24 +42,45 @@ public class TaxTreeClusterMkParticleDriver implements MkParticleDriver {
       Dimension dimension = velocity.getDimensions()[i];
       // update master
       TaxTreeGeneralizerActor masterActor =
-          ClassUtil.<TaxTreeGeneralizerActor>cast(dtActor.getMasterGeneralizer())
+          ClassUtil.<TaxTreeGeneralizerActor>cast(
+              dtActor.getMasterGeneralizer())
               .updateLevel(dimension.getMasterDeltaLevel());
 
-      for (Entry<TaxTreeNode, Integer> kv : dimension.getSlaveDeltaLevelMap()
-          .entrySet()) {
-        TaxTreeGeneralizerActor actor =
-            ClassUtil.cast(dtActor.getSlaveMap().get(kv.getKey()));
-        if (actor == null) {
-          // generate a new special search node
-          TaxTreeGeneralizerActor newActor = masterActor.newInstance();
-          newActor.setdTree(masterActor.getdTree());
-          newActor.setMaxLevel(masterActor.getMaxLevel());
-          newActor.setMinLevel(masterActor.getMinLevel());
-          newActor.setMaxLevel(kv.getValue());
-          dtActor.getSlaveMap().put(kv.getKey(), newActor);
-        } else {
-          actor.updateLevel(kv.getValue());
+
+
+      if (dimension.getSlaveDeltaLevelMap() != null) {
+
+        Set<TaxTreeNode> removeSet = new HashSet<>();
+
+        Iterator<Entry<TaxTreeNode, Integer>> it =
+            dimension.getSlaveDeltaLevelMap().entrySet().iterator();
+
+        while (it.hasNext()) {
+          Entry<TaxTreeNode, Integer> kv = it.next();
+          TaxTreeGeneralizerActor actor =
+              ClassUtil.cast(dtActor.getSlaveMap().get(kv.getKey()));
+          if (actor == null) {
+            // generate a new special search node
+            TaxTreeGeneralizerActor newActor = masterActor.newInstance();
+            newActor.setdTree(masterActor.getdTree());
+            newActor.withMaxLevel(masterActor.getMaxLevel());
+            newActor.withMinLevel(masterActor.getMinLevel());
+            newActor.withLevel(kv.getValue());
+            dtActor.getSlaveMap().put(kv.getKey(), newActor);
+            actor = newActor;
+          } else {
+            actor.updateLevel(kv.getValue());
+          }
+
+          if (actor.getLevel() == masterActor.getLevel()&&kv.getValue().intValue()==dimension.getMasterDeltaLevel()) {
+            removeSet.add(kv.getKey());
+          }
         }
+
+        for (TaxTreeNode rmEle : removeSet) {
+          dtActor.getSlaveMap().remove(rmEle);
+        }
+
       }
     }
 

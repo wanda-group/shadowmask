@@ -25,6 +25,7 @@ public abstract class MkParticle
 
   private MkParticleDriver particleDriver;
 
+
   @Override public void move(MkVelocity mkVelocity) {
     MkPosition position = this.currentPosition();
     // check null
@@ -35,12 +36,12 @@ public abstract class MkParticle
         || position.getGeneralizerActors().length == 0) {
       throw new NullPointerException("generalizers cannot be null");
     }
-    if (mkVelocity == null || mkVelocity.getVelocity().length == 0) {
+    if (mkVelocity == null || mkVelocity.dimension() == 0) {
       throw new NullPointerException("pso moving velocities cannot be null");
     }
 
     if (position.getGeneralizerActors().length != mkVelocity
-        .getVelocity().length) {
+        .dimension()) {
       throw new RuntimeException(
           "dimension of generalizers and velocities should be equally");
     }
@@ -58,5 +59,9 @@ public abstract class MkParticle
       MkParticleDriver particleDriver) {
     this.particleDriver = particleDriver;
     return this;
+  }
+
+  public void setParticleDriver(MkParticleDriver particleDriver) {
+    this.particleDriver = particleDriver;
   }
 }

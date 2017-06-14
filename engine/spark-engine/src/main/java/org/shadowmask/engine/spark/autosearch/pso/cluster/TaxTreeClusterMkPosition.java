@@ -17,13 +17,63 @@
  */
 package org.shadowmask.engine.spark.autosearch.pso.cluster;
 
+import java.util.Random;
+import org.shadowmask.core.data.DataType;
+import org.shadowmask.core.domain.TaxTreeType;
+import org.shadowmask.core.domain.tree.LeafLocator;
+import org.shadowmask.core.domain.tree.TaxTree;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
 import org.shadowmask.engine.spark.autosearch.pso.MkPosition;
 
 public class TaxTreeClusterMkPosition extends MkPosition {
 
+  private TaxTree[] trees;
+  private DataType[] dataTypes;
+
   @Override public void init() {
     this.generalizerActors = new TaxTreeClusterGeneralizerActor[this.dimension];
-    //todo generate random  generalizers
+    for (int i = 0; i < this.dimension; i++) {
+      TaxTree tree = trees[i];
+      //      DataType dataType = dataTypes[i];
+      TaxTreeClusterGeneralizerActor actor =
+          new TaxTreeClusterGeneralizerActor();
+
+      TaxTreeGeneralizerActor innerActor = new TaxTreeGeneralizerActor();
+      //      switch (dataType) {
+      //      case INTEGER:
+      //        actor = new TaxTreeClusterGeneralizerActor<Integer, String>();
+      //        innerActor = new TaxTreeGeneralizerActor<String, String>();
+      //        break;
+      //      case DATE:
+      //        actor = new TaxTreeClusterGeneralizerActor<Date, String>();
+      //        innerActor = new TaxTreeGeneralizerActor<Date, String>();
+      //        break;
+      //      case DECIMAL:
+      //        actor = new TaxTreeClusterGeneralizerActor<Double, String>();
+      //        innerActor = new TaxTreeGeneralizerActor<Double, String>();
+      //      }
+
+      int maxLevel = tree.type() == TaxTreeType.COMPARABLE
+          ? tree.getHeight()
+          : tree.getHeight() - 1;
+      actor.withMasterGeneralizer(innerActor.withMaxLevel(maxLevel)
+          .withLevel(new Random().nextInt(maxLevel + 1)).withDTreeAsTax(tree))
+          .withTree((LeafLocator) tree);
+      for (Object node : tree.getLeaves()) {
+        TaxTreeNode treeNode = (TaxTreeNode) node;
+        TaxTreeGeneralizerActor slaveActor = new TaxTreeGeneralizerActor();
+        slaveActor.withMaxLevel(maxLevel)
+            .withLevel(new Random().nextInt(maxLevel + 1)).withDTreeAsTax(tree);
+        actor.getSlaveMap().put(treeNode, slaveActor);
+      }
+
+      this.generalizerActors[i] = actor;
+    }
+  }
+
+  public void setTrees(TaxTree[] trees) {
+    this.trees = trees;
   }
 }
