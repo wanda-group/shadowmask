@@ -23,16 +23,15 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import org.javatuples.Pair;
+import org.shadowmask.core.domain.TaxTreeType;
 import org.shadowmask.core.domain.tree.ComparableTaxTree.ComparableTaxTreeNode;
 import org.shadowmask.core.domain.treeobj.TreeObject;
 import org.shadowmask.core.util.Predictor;
 
 public abstract class ComparableTaxTree<T extends Comparable<T>>
-    extends TaxTree<ComparableTaxTreeNode<T>>
-    implements LeafLocator<T> {
+    extends TaxTree<ComparableTaxTreeNode<T>> implements LeafLocator<T> {
 
-  @Override protected ComparableTaxTreeNode<T> constructTNode(
-      String jsonStr) {
+  @Override protected ComparableTaxTreeNode<T> constructTNode(String jsonStr) {
 
     TreeObject<T> treeObject = constructTreeObject(jsonStr);
     ComparableTaxTreeNode<T> node = new ComparableTaxTreeNode<>();
@@ -40,6 +39,10 @@ public abstract class ComparableTaxTree<T extends Comparable<T>>
     node.setlBound(treeObject.getlBound());
     node.sethBound(treeObject.gethBound());
     return node;
+  }
+
+  @Override public TaxTreeType type() {
+    return TaxTreeType.COMPARABLE;
   }
 
   // sort all the leave nodes
@@ -133,7 +136,7 @@ public abstract class ComparableTaxTree<T extends Comparable<T>>
           childNode.setParent(parent);
           hB = childNode.hBound;
         }
-        if (parentLevelIdx == scale - 1 ) {
+        if (parentLevelIdx == scale - 1) {
           while (nodeIterator.hasNext()) {
             childNode = nodeIterator.next();
             children.add(childNode);
@@ -150,6 +153,7 @@ public abstract class ComparableTaxTree<T extends Comparable<T>>
       nodeIterator = parentList.iterator();
     }
     this.root = nodeIterator.next();
+    this.height = levelScale.length + 1;
   }
 
   public int compare(ComparableTaxTreeNode<T> node1,
@@ -218,8 +222,7 @@ public abstract class ComparableTaxTree<T extends Comparable<T>>
     parent.setlBound(lBound);
   }
 
-  public static class ComparableTaxTreeNode<T>
-      extends TaxTreeNode {
+  public static class ComparableTaxTreeNode<T> extends TaxTreeNode {
     private T lBound;
 
     private T hBound;

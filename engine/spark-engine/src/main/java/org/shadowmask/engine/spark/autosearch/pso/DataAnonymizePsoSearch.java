@@ -21,9 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.spark.rdd.RDD;
 import org.shadowmask.core.algorithms.pso.Swarm;
-import org.shadowmask.core.mask.rules.generalizer.Generalizer;
+import org.shadowmask.core.domain.tree.TaxTree;
 import org.shadowmask.engine.spark.Rethrow;
 import org.shadowmask.engine.spark.autosearch.Executable;
 import org.shadowmask.engine.spark.autosearch.pso.cluster.ClusterMkVelocityCalculator;
@@ -33,49 +32,43 @@ import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkVeloci
 /**
  * user pso search a solution of data mask
  */
-public class KAnonymityPsoSearch
+public abstract class DataAnonymizePsoSearch<TABLE>
     extends Swarm<MkVelocity, MkFitness, MkPosition, MkParticle> {
 
+  MkVelocityCalculator calculator = new ClusterMkVelocityCalculator();
   /**
    * dataset to be generalized .
    */
-  private RDD<String> privateTable;
+  private TABLE privateTable;
   /**
    * target k value .
    */
-  private int k;
-  private int maxSteps;
-  private int particleSize;
-  private int dimension;
-  MkVelocityCalculator calculator = new ClusterMkVelocityCalculator();
+  private int k = 10;
+  private int maxSteps = 10;
+  private int particleSize = 2;
+  private int dimension = 7;
+  private TaxTree[] trees;
+  private int[] treeHeights;
   private List<MkParticle> particles = new ArrayList<>();
 
-  private Generalizer[] generalizers;
 
-  private MkFitnessCalculator mkFitnessCalculator = new MkFitnessCalculator(10);
-
-  public KAnonymityPsoSearch() {
-
-    try {
-      init();
-    } catch (ClassNotFoundException e) {
-      Rethrow.rethrow(e);
-    }
-  }
-
-  private void init() throws ClassNotFoundException {
+  public void init() throws ClassNotFoundException {
     this.particles = new ArrayList<>();
     for (int i = 0; i < this.particleSize(); ++i) {
       // generate particles randomly
       MkParticle particle = new MkParticle() {
         @Override public MkPosition randomPosition() {
-          MkPosition mkPosition = new TaxTreeClusterMkPosition();
+          TaxTreeClusterMkPosition mkPosition = new TaxTreeClusterMkPosition();
+          mkPosition.setTrees(DataAnonymizePsoSearch.this.trees);
+          mkPosition.setDimension(DataAnonymizePsoSearch.this.dimension);
           mkPosition.init();
           return mkPosition;
         }
 
         @Override public MkVelocity randomVelocity() {
-          MkVelocity mkVelocity = new TaxTreeClusterMkVelocity();
+          TaxTreeClusterMkVelocity mkVelocity = new TaxTreeClusterMkVelocity();
+          mkVelocity.setSize(DataAnonymizePsoSearch.this.dimension);
+          mkVelocity.setLevelBounds(DataAnonymizePsoSearch.this.treeHeights);
           mkVelocity.init();
           return mkVelocity;
         }
@@ -84,6 +77,9 @@ public class KAnonymityPsoSearch
     }
   }
 
+  
+  protected abstract MkFitnessCalculator<TABLE> mkFitnessCalculator();
+  
   @Override public List<MkParticle> particles() {
     return particles;
 
@@ -94,14 +90,16 @@ public class KAnonymityPsoSearch
     final Map<MkParticle, MkFitness> fitnessMap = new HashMap<>();
     Executable executable = new Executable() {
       @Override public void exe() {
-        mkFitnessCalculator
+        mkFitnessCalculator()
             .calculateFitness(particles(), fitnessMap, waitObject,
                 privateTable);
       }
     };
     new Thread(executable).start();
     try {
-      waitObject.wait();
+      synchronized (waitObject){
+        waitObject.wait();
+      }
     } catch (InterruptedException e) {
       Rethrow.rethrow(e);
     }
@@ -133,5 +131,17 @@ public class KAnonymityPsoSearch
 
   @Override public int particleSize() {
     return particleSize;
+  }
+
+  public void setPrivateTable(TABLE privateTable) {
+    this.privateTable = privateTable;
+  }
+
+  public void setTrees(TaxTree[] trees) {
+    this.trees = trees;
+  }
+
+  public void setTreeHeights(int[] treeHeights) {
+    this.treeHeights = treeHeights;
   }
 }

@@ -2,6 +2,8 @@ package com.shadowmask.core.domain;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.shadowmask.core.data.DataType;
+import org.shadowmask.core.domain.TaxTreeType;
 import org.shadowmask.core.domain.tree.TaxTree;
 
 public class TaxTestTree extends TaxTree<TestTreeNode> {
@@ -37,5 +39,12 @@ public class TaxTestTree extends TaxTree<TestTreeNode> {
         + "        ]\n" + "      }\n" + "    ]\n" + "  }\n" + "}");
   }
 
+  @Override public TaxTreeType type() {
+    return null;
+  }
+
+  @Override public DataType dataType() {
+    return null;
+  }
 
 }

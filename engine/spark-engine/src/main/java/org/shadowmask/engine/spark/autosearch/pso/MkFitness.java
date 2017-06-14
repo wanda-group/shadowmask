@@ -25,8 +25,26 @@ public class MkFitness extends Fitness<MkFitness> {
 
   private double fitnessValue;
 
+  private double outlierSize;
+
   @Override public boolean betterThan(MkFitness that) {
     return this.fitnessValue() < that.fitnessValue();
+  }
+
+  public double getFitnessValue() {
+    return fitnessValue;
+  }
+
+  public void setFitnessValue(double fitnessValue) {
+    this.fitnessValue = fitnessValue;
+  }
+
+  public double getOutlierSize() {
+    return outlierSize;
+  }
+
+  public void setOutlierSize(double outlierSize) {
+    this.outlierSize = outlierSize;
   }
 
   public int getK() {
@@ -39,9 +57,5 @@ public class MkFitness extends Fitness<MkFitness> {
 
   public double fitnessValue() {
     return fitnessValue;
-  }
-
-  public void setFitnessValue(double fitnessValue) {
-    this.fitnessValue = fitnessValue;
   }
 }

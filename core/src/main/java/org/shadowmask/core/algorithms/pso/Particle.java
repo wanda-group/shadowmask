@@ -1,6 +1,9 @@
 package org.shadowmask.core.algorithms.pso;
 
-public interface Particle<P extends Position, V extends Velocity, F extends Fitness> {
+import java.io.Serializable;
+
+public interface Particle<P extends Position, V extends Velocity, F extends Fitness> extends
+    Serializable {
 
   /**
    * init operation .

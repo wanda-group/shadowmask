@@ -15,22 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.domain.tree;
+package org.shadowmask.core.domain;
 
-import com.google.gson.Gson;
-import org.shadowmask.core.data.DataType;
-import org.shadowmask.core.domain.treeobj.DoubleTreeObject;
-import org.shadowmask.core.domain.treeobj.TreeObject;
-import org.shadowmask.core.util.JsonUtil;
-
-public class DoubleTaxTree extends ComparableTaxTree<Double> {
-  @Override protected TreeObject<Double> constructTreeObject(String json) {
-    Gson gson = JsonUtil.newGsonInstance();
-    DoubleTreeObject obj = gson.fromJson(json, DoubleTreeObject.class);
-    return obj;
-  }
-
-  @Override public DataType dataType() {
-    return DataType.DECIMAL;
-  }
+public enum TaxTreeType {
+  CATEGORY,//for dispersed value
+  COMPARABLE//for continue value
 }

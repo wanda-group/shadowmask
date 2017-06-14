@@ -47,4 +47,8 @@ public class MkPosition implements Position {
   public void setGeneralizerActors(GeneralizerActor[] generalizerActors) {
     this.generalizerActors = generalizerActors;
   }
+
+  public void setDimension(int dimension) {
+    this.dimension = dimension;
+  }
 }

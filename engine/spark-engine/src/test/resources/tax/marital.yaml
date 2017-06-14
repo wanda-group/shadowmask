@@ -10,11 +10,11 @@ root:
         - text: Never-married
     - text: exception
       children:
-          - text: port
+          - text: port single
             children:
               - text: Divorced
               - text: Separated
-          - text: pasv
+          - text: pasv single
             children:
               - text: Widowed
               - text: Married-spouse-absent

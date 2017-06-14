@@ -18,67 +18,104 @@
 
 package org.shadowmask.core.mask.rules.generalizer.actor;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
-import org.shadowmask.core.domain.tree.TaxTreeNode;
+import org.shadowmask.core.domain.tree.DateTaxTree;
 import org.shadowmask.core.domain.tree.LeafLocator;
+import org.shadowmask.core.domain.tree.TaxTree;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.util.Predictor;
+import org.shadowmask.core.util.Rethrow;
 
 /**
  * find a generalizer from slaveMap ,if null use the master Generalizer
  */
-public class TaxTreeClusterGeneralizerActor<IN, OUT>
-    extends ClusterGeneralizerActor<IN, OUT> {
+public class TaxTreeClusterGeneralizerActor
+    extends ClusterGeneralizerActor<Object, String> {
 
-  private GeneralizerActor<IN, OUT> masterGeneralizer;
+  private GeneralizerActor masterGeneralizer;
 
-  private LeafLocator<IN> tree;
+  private LeafLocator tree;
 
-  private Map<TaxTreeNode, GeneralizerActor<IN, OUT>> slaveMap = new HashMap<>();
+  private Map<TaxTreeNode, GeneralizerActor> slaveMap = new HashMap<>();
 
-  @Override GeneralizerActor<IN, OUT> locateGeneralizer(IN in) {
+  @Override public String generalize(Object s) {
+    return super.generalize(convertInput(s));
+  }
+
+  @Override GeneralizerActor locateGeneralizer(Object in) {
 
     Predictor.predict(masterGeneralizer != null,
         "master generalizer should not be null");
     Predictor.predict(tree != null, "tree should not be null");
-    Predictor.predict(slaveMap!=null, "slave map should not be null");
+    Predictor.predict(slaveMap != null, "slave map should not be null");
 
-    TaxTreeNode leaf = tree.locate(in);
-    GeneralizerActor<IN, OUT> generalizer = slaveMap.get(leaf);
+    TaxTree taxTree = (TaxTree) tree;
+
+    TaxTreeNode leaf = tree.locate(convertInput(in));
+
+    GeneralizerActor generalizer = slaveMap.get(leaf);
     if (generalizer == null) {
       generalizer = masterGeneralizer;
     }
     return generalizer;
   }
 
-  public TaxTreeClusterGeneralizerActor<IN, OUT> withTree(
-      LeafLocator<IN> tree) {
+  public Object convertInput(Object in) {
+    TaxTree taxTree = (TaxTree) tree;
+    Object res = null;
+    switch (taxTree.dataType()) {
+    case INTEGER:
+      res = Integer.valueOf(in.toString());
+      break;
+    case DECIMAL:
+      res = Double.valueOf(in.toString());
+      break;
+    case DATE:
+      DateTaxTree dateTaxTree = (DateTaxTree) taxTree;
+      SimpleDateFormat formater =
+          new SimpleDateFormat(dateTaxTree.getPattern());
+      try {
+        res = formater.parse(in.toString());
+      } catch (ParseException e) {
+        Rethrow.rethrow(e);
+      }
+      break;
+    default:
+      res = in;
+    }
+    return res;
+  }
+
+  public TaxTreeClusterGeneralizerActor withTree(LeafLocator tree) {
     this.tree = tree;
     return this;
   }
 
-  public TaxTreeClusterGeneralizerActor<IN, OUT> withMasterGeneralizer(
-      GeneralizerActor<IN, OUT> masterGeneralizer) {
+  public TaxTreeClusterGeneralizerActor withMasterGeneralizer(
+      GeneralizerActor masterGeneralizer) {
     this.masterGeneralizer = masterGeneralizer;
     return this;
   }
 
-  public TaxTreeClusterGeneralizerActor<IN, OUT> addSlaveGeneralizer(
-      TaxTreeNode tnode,GeneralizerActor<IN, OUT> generalizer) {
-    Predictor.predict(slaveMap!=null, "slave map should not be null");
-    this.slaveMap.put(tnode,generalizer);
+  public TaxTreeClusterGeneralizerActor addSlaveGeneralizer(TaxTreeNode tnode,
+      GeneralizerActor generalizer) {
+    Predictor.predict(slaveMap != null, "slave map should not be null");
+    this.slaveMap.put(tnode, generalizer);
     return this;
   }
 
-  public GeneralizerActor<IN, OUT> getMasterGeneralizer() {
+  public GeneralizerActor getMasterGeneralizer() {
     return masterGeneralizer;
   }
 
-  public LeafLocator<IN> getTree() {
+  public LeafLocator getTree() {
     return tree;
   }
 
-  public Map<TaxTreeNode, GeneralizerActor<IN, OUT>> getSlaveMap() {
+  public Map<TaxTreeNode, GeneralizerActor> getSlaveMap() {
     return slaveMap;
   }
 }

@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import org.shadowmask.core.data.DataType;
 import org.shadowmask.core.domain.treeobj.TreeObject;
 import org.shadowmask.core.util.JsonUtil;
 import org.shadowmask.core.util.Rethrow;
@@ -62,5 +63,9 @@ public class DateTaxTree extends ComparableTaxTree<Date> {
 
   public String getPattern() {
     return pattern;
+  }
+
+  @Override public DataType dataType() {
+    return DataType.DATE;
   }
 }

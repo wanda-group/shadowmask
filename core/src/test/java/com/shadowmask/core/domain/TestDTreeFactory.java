@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat;
 import org.junit.Assert;
 import org.junit.Test;
 import org.shadowmask.core.data.DataType;
-import org.shadowmask.core.domain.DTreeFactory;
+import org.shadowmask.core.domain.TaxTreeFactory;
 import org.shadowmask.core.domain.tree.DateTaxTree;
 import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.domain.tree.OrderedStringTaxTree;
@@ -31,7 +31,7 @@ public class TestDTreeFactory {
 
   @Test public void test() throws ParseException {
     OrderedStringTaxTree tree =
-        DTreeFactory.<OrderedStringTaxTree>getTree(
+        TaxTreeFactory.<OrderedStringTaxTree>getTree(
             DataType.COMPARABLE_STRING).withComparator(
             OrderedStringTaxTree.CombineFromRootWithSeparatorComparator
                 .newInstance());
@@ -40,7 +40,7 @@ public class TestDTreeFactory {
     TaxTreeNode node = tree.locate("中国,河北,保定,博野,南小王");
     Assert.assertNotNull(node);
 
-    DateTaxTree dateTree1 = DTreeFactory.getTree(DataType.DATE);
+    DateTaxTree dateTree1 = TaxTreeFactory.getTree(DataType.DATE);
     dateTree1.withPattern("yyyy/MM/dd");
     dateTree1.constructFromYamlInputStream(this.getClass().getClassLoader()
         .getResourceAsStream("Interval-Date-Mask.yaml"));

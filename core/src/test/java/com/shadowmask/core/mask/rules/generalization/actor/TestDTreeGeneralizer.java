@@ -57,8 +57,8 @@ public class TestDTreeGeneralizer {
           }
         }.withDTree((LeafLocator) tree).withLevel(2);
 
-    TaxTreeClusterGeneralizerActor<String, String> clusterActor =
-        new TaxTreeClusterGeneralizerActor<String, String>()
+    TaxTreeClusterGeneralizerActor clusterActor =
+        new TaxTreeClusterGeneralizerActor()
             .withMasterGeneralizer(treeActor).withTree((LeafLocator) tree)
             .addSlaveGeneralizer(tree.getLeaves().get(0),treeActor1);
 

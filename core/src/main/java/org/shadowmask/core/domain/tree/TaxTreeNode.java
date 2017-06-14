@@ -15,7 +15,7 @@ public class TaxTreeNode implements Serializable {
 
   private String name;
 
-  private transient TaxTreeNode parent;
+  private TaxTreeNode parent;
 
   private List<? extends TaxTreeNode> children;
 

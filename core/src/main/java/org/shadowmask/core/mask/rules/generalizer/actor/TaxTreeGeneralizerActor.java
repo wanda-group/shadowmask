@@ -17,8 +17,10 @@
  */
 package org.shadowmask.core.mask.rules.generalizer.actor;
 
-import org.shadowmask.core.domain.tree.TaxTreeNode;
+import org.shadowmask.core.domain.tree.ComparableTaxTree;
 import org.shadowmask.core.domain.tree.LeafLocator;
+import org.shadowmask.core.domain.tree.TaxTree;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.mask.rules.generalizer.functions.Function;
 import org.shadowmask.core.util.ClassUtil;
 import org.shadowmask.core.util.Predictor;
@@ -29,6 +31,8 @@ public class TaxTreeGeneralizerActor<IN, OUT>
   private int level;
   private int maxLevel = Integer.MAX_VALUE;
   private int minLevel = 0;
+
+  private LeafLocator<IN> dTree;
 
   private Function<TaxTreeNode, OUT> resultParser =
       new Function<TaxTreeNode, OUT>() {
@@ -43,8 +47,6 @@ public class TaxTreeGeneralizerActor<IN, OUT>
     }
   };
 
-  private LeafLocator<IN> dTree;
-
   @Override public OUT generalize(IN in) {
     TaxTreeNode leaf = dTree.locate(in);
     if (leaf == null) {
@@ -56,7 +58,10 @@ public class TaxTreeGeneralizerActor<IN, OUT>
     }
 
     TaxTreeNode pointer = leaf;
-    for (int i = Math.max(0, minLevel); i < Math.min(maxLevel, level - 1);
+
+    int searchLevel = dTree instanceof ComparableTaxTree ? level - 1 : level;
+
+    for (int i = Math.max(0, minLevel); i < Math.min(maxLevel, searchLevel);
         ++i) {
       if (pointer.getParent() != null) {
         pointer = pointer.getParent();
@@ -92,12 +97,17 @@ public class TaxTreeGeneralizerActor<IN, OUT>
   }
 
   public TaxTreeGeneralizerActor<IN, OUT> withLevel(int level) {
-    this.level = level;
+    this.updateLevel(level - this.level);
     return this;
   }
 
   public TaxTreeGeneralizerActor<IN, OUT> withDTree(LeafLocator<IN> dTree) {
     this.dTree = dTree;
+    return this;
+  }
+
+  public TaxTreeGeneralizerActor<IN, OUT> withDTreeAsTax(TaxTree<?> dTree) {
+    this.dTree = (LeafLocator<IN>) dTree;
     return this;
   }
 
@@ -122,16 +132,18 @@ public class TaxTreeGeneralizerActor<IN, OUT>
     return maxLevel;
   }
 
-  public void setMaxLevel(int maxLevel) {
+  public TaxTreeGeneralizerActor<IN, OUT> withMaxLevel(int maxLevel) {
     this.maxLevel = maxLevel;
+    return this;
   }
 
   public int getMinLevel() {
     return minLevel;
   }
 
-  public void setMinLevel(int minLevel) {
+  public TaxTreeGeneralizerActor<IN, OUT> withMinLevel(int minLevel) {
     this.minLevel = minLevel;
+    return this;
   }
 
   public LeafLocator<IN> getdTree() {
