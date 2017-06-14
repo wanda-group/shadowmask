@@ -17,13 +17,34 @@
  */
 package org.shadowmask.engine.spark.autosearch.pso.cluster;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.engine.spark.autosearch.pso.MkVelocity;
 
-public class TaxTreeClusterMkVelocity extends MkVelocity {
+public class TaxTreeClusterMkVelocity extends MkVelocity
+    implements Serializable {
 
   Dimension[] dimensions;
+  int[] levelBounds;
+  private int size;
+
+  @Override public void init() {
+    this.dimensions = new Dimension[size];
+    for (int i = 0; i < this.size; i++) {
+      Dimension d = new Dimension();
+      d.setMasterDeltaLevel(
+          new Random().nextInt(levelBounds[i]) * 2 - levelBounds[i]);
+      d.setSlaveDeltaLevelMap(new HashMap<TaxTreeNode, Integer>());
+      this.dimensions[i] = d;
+    }
+  }
+
+  @Override public int dimension() {
+    return this.getSize();
+  }
 
   public Dimension[] getDimensions() {
     return dimensions;
@@ -33,7 +54,19 @@ public class TaxTreeClusterMkVelocity extends MkVelocity {
     this.dimensions = dimensions;
   }
 
-  static class Dimension {
+  public void setLevelBounds(int[] levelBounds) {
+    this.levelBounds = levelBounds;
+  }
+
+  public int getSize() {
+    return size;
+  }
+
+  public void setSize(int size) {
+    this.size = size;
+  }
+
+  static class Dimension implements Serializable {
     private Integer masterDeltaLevel;
 
     private Map<TaxTreeNode, Integer> slaveDeltaLevelMap;

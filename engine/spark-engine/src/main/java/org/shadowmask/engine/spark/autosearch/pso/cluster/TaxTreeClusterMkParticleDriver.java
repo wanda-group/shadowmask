@@ -50,9 +50,9 @@ public class TaxTreeClusterMkParticleDriver implements MkParticleDriver {
           // generate a new special search node
           TaxTreeGeneralizerActor newActor = masterActor.newInstance();
           newActor.setdTree(masterActor.getdTree());
-          newActor.setMaxLevel(masterActor.getMaxLevel());
-          newActor.setMinLevel(masterActor.getMinLevel());
-          newActor.setMaxLevel(kv.getValue());
+          newActor.withMaxLevel(masterActor.getMaxLevel());
+          newActor.withMinLevel(masterActor.getMinLevel());
+          newActor.withMaxLevel(kv.getValue());
           dtActor.getSlaveMap().put(kv.getKey(), newActor);
         } else {
           actor.updateLevel(kv.getValue());

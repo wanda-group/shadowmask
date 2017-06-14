@@ -18,6 +18,7 @@
 package org.shadowmask.core.domain.tree;
 
 import com.google.gson.Gson;
+import org.shadowmask.core.data.DataType;
 import org.shadowmask.core.domain.treeobj.IntegerTreeObject;
 import org.shadowmask.core.domain.treeobj.TreeObject;
 import org.shadowmask.core.util.JsonUtil;
@@ -27,5 +28,9 @@ public class IntegerTaxTree extends ComparableTaxTree<Integer> {
     Gson gson = JsonUtil.newGsonInstance();
     IntegerTreeObject obj = gson.fromJson(json, IntegerTreeObject.class);
     return obj;
+  }
+
+  @Override public DataType dataType() {
+    return DataType.INTEGER;
   }
 }

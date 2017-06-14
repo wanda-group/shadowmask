@@ -23,12 +23,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import org.shadowmask.core.domain.tree.LeafLocator;
 import org.shadowmask.core.domain.tree.TaxTree;
 import org.shadowmask.core.domain.tree.TaxTreeNode;
-import org.shadowmask.core.domain.tree.LeafLocator;
-import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
-import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
 import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
+import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
 import org.shadowmask.core.util.ClassUtil;
 import org.shadowmask.core.util.Predictor;
 import org.shadowmask.engine.spark.autosearch.pso.MkPosition;
@@ -75,7 +75,7 @@ public class ClusterMkVelocityCalculator extends MkVelocityCalculator {
         .getGeneralizerActors().length, "Dimension not match");
 
     TaxTreeClusterMkVelocity velocity = new TaxTreeClusterMkVelocity();
-    int d = currentV.getVelocity().length;
+    int d = currentV.getSize();
     velocity.setDimensions(new Dimension[d]);
 
     for (int i = 0; i < d; i++) {
@@ -178,7 +178,8 @@ public class ClusterMkVelocityCalculator extends MkVelocityCalculator {
     Predictor.predict(currentPosition instanceof TaxTreeClusterMkPosition,
         "type not math");
 
-    TaxTreeClusterMkPosition curPos = (TaxTreeClusterMkPosition) currentPosition;
+    TaxTreeClusterMkPosition curPos =
+        (TaxTreeClusterMkPosition) currentPosition;
     GeneralizerActor[] actors = curPos.getGeneralizerActors();
     Predictor.predict(actors != null && actors.length > 0,
         "generalizer actors should be null or empty array");
@@ -213,7 +214,8 @@ public class ClusterMkVelocityCalculator extends MkVelocityCalculator {
     for (Entry<TaxTreeNode, GeneralizerActor> kv : slaveMap.entrySet()) {
       Predictor.predict(kv.getValue() instanceof TaxTreeGeneralizerActor,
           "actor type not match");
-      TaxTreeGeneralizerActor slaveActor = (TaxTreeGeneralizerActor) kv.getValue();
+      TaxTreeGeneralizerActor slaveActor =
+          (TaxTreeGeneralizerActor) kv.getValue();
       randomMasterLevel = new Random()
           .nextInt(slaveActor.getMaxLevel() + 1 - slaveActor.getMinLevel())
           - slaveActor.getLevel();

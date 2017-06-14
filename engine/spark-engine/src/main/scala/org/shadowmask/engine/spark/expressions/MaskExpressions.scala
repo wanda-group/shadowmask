@@ -1,8 +1,8 @@
 package org.apache.spark.sql.catalyst.expressions
 
 import org.apache.spark.sql.Column
-import org.apache.spark.sql.catalyst.expressions.codegen.{GeneratedExpressionCode, CodeGenContext}
-import org.apache.spark.sql.types.{StringType, DateType, AbstractDataType, DataType}
+import org.apache.spark.sql.catalyst.expressions.codegen.{CodeGenContext, GeneratedExpressionCode}
+import org.apache.spark.sql.types.{DataType, StringType}
 import org.apache.spark.unsafe.types.UTF8String
 import org.shadowmask.engine.spark.expressions.MaskExpressionsUtil
 

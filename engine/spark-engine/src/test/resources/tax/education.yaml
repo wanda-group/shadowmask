@@ -2,35 +2,35 @@ comparable: true
 type: string
 version: 1.0
 root:
-  - text: education
-    children:
-      - text: high
-        children:
-          - text: very high
-            children:
-              - text: Doctorate
-              - text: Prof-school
-              - text: Masters
-              - text: Bachelors
-          - text: mid high
-            children:
-              - text: Assoc-voc
-              - text: Assoc-acdm
-      - text: mid
-        children:
-          - text: Some-college
-          - text: HS-grad
-      - text: low
-        children:
-          - text: 9~12th
-            children:
-              - text: 12th
-              - text: 11th
-              - text: 10th
-              - text: 9th
-          - text: 0~8th
-            children:
-              - text: 7th-8th
-              - text: 5th-6th
-              - text: 1st-4th
-              - text: Preschool
+  text: '*'
+  children:
+    - text: Assoc-acdm~Doctorate
+      children:
+        - text: Bachelors~Doctorate
+          children:
+            - text: Doctorate
+            - text: Prof-school
+            - text: Masters
+            - text: Bachelors
+        - text: mid high
+          children:
+            - text: Assoc-voc
+            - text: Assoc-acdm
+    - text: HS-grad~Some-college
+      children:
+        - text: Some-college
+        - text: HS-grad
+    - text: Preschool~9~12th
+      children:
+        - text: 9~12th
+          children:
+            - text: 12th
+            - text: 11th
+            - text: 10th
+            - text: 9th
+        - text: 0~8th
+          children:
+            - text: 7th-8th
+            - text: 5th-6th
+            - text: 1st-4th
+            - text: Preschool

@@ -20,6 +20,7 @@ package org.shadowmask.core.domain.tree;
 import com.google.gson.Gson;
 import java.util.Iterator;
 import java.util.List;
+import org.shadowmask.core.data.DataType;
 import org.shadowmask.core.domain.treeobj.StringTreeObject;
 import org.shadowmask.core.domain.treeobj.TreeObject;
 import org.shadowmask.core.util.JsonUtil;
@@ -37,13 +38,12 @@ public class OrderedStringTaxTree extends ComparableTaxTree<String> {
     return obj;
   }
 
-  @Override protected int leafCompareValue(
-      ComparableTaxTreeNode<String> leaf, String value) {
+  @Override protected int leafCompareValue(ComparableTaxTreeNode<String> leaf,
+      String value) {
     return comparator.compare(leaf, value);
   }
 
-  public OrderedStringTaxTree withComparator(
-      StringNodeComparator comparator) {
+  public OrderedStringTaxTree withComparator(StringNodeComparator comparator) {
     this.comparator = comparator;
     return this;
   }
@@ -53,6 +53,10 @@ public class OrderedStringTaxTree extends ComparableTaxTree<String> {
       int[] levelScale) {
     throw new RuntimeException(
         "not support buildFromSortedValues in ordered String DTree ");
+  }
+
+  @Override public DataType dataType() {
+    return DataType.COMPARABLE_STRING;
   }
 
   @Override public void onRelationBuilt(ComparableTaxTreeNode<String> parent,

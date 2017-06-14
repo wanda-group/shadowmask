@@ -18,6 +18,7 @@
 package org.shadowmask.core.domain.tree;
 
 import com.google.gson.Gson;
+import org.shadowmask.core.data.DataType;
 import org.shadowmask.core.domain.treeobj.LongTreeObject;
 import org.shadowmask.core.domain.treeobj.TreeObject;
 import org.shadowmask.core.util.JsonUtil;
@@ -28,5 +29,9 @@ public class LongTaxTree extends ComparableTaxTree<Long> {
     Gson gson = JsonUtil.newGsonInstance();
     LongTreeObject obj = gson.fromJson(json, LongTreeObject.class);
     return obj;
+  }
+
+  @Override public DataType dataType() {
+    return DataType.INTEGER;
   }
 }
