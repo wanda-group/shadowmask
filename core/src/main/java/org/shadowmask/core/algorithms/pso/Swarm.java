@@ -2,18 +2,15 @@ package org.shadowmask.core.algorithms.pso;
 
 import java.util.List;
 import java.util.Map;
+import org.shadowmask.core.util.Rethrow;
 
 public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Position, PA extends Particle<P, V, F>> {
 
-  private PA globalBest;
-
-  private PA currentBest;
-
-  private PA currentWorst;
-
   protected Map<PA, F> fitnessMap = null;
-
   protected Map<PA, V> newVelocities = null;
+  private PA globalBest;
+  private PA currentBest;
+  private PA currentWorst;
 
   /**
    * all particles
@@ -90,7 +87,42 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
 
   public abstract int particleSize();
 
+  public void getBetterStep(int i) {
+  }
+
+  public void before() {
+
+  }
+
+  public void finished() {
+
+  }
+
+  public void aborted(Exception e) {
+    Rethrow.rethrow(e);
+  }
+
+  public void atLast() {
+
+  }
+
+  public void foundABetterParticle(PA pa){
+
+  }
+
   public void optimize() {
+    try {
+      before();
+      optimize0();
+      finished();
+    } catch (Exception e) {
+      aborted(e);
+    } finally {
+      atLast();
+    }
+  }
+
+  private void optimize0() {
     for (int i = 0; i < maxSteps(); ++i) {
       List<PA> particles = particles();
       Map<PA, F> fitnessMap = calculateFitness();
@@ -99,8 +131,16 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
       // update swarm information
 
       for (PA pa : particles) {
+        System.out.println(pa.currentPosition());
+      }
+
+      for (PA pa : particles) {
+
         F f = fitnessMap.get(pa);
 
+        if (f == null) {
+          continue;
+        }
         if (pa.historyBestPosition() == null || pa.historyBestFitness() == null
             || f.betterThan(pa.historyBestFitness())) {
           pa.getBetter(pa.currentPosition(), f);
@@ -108,8 +148,10 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
         // update global best
         if (globalBestParticle() == null || f
             .betterThan(globalBestParticle().historyBestFitness())) {
-          System.out.print(i+"\t");
+          System.out.print(i + "\t");
+          getBetterStep(i);
           updateGlobalBestParticle(pa);
+          foundABetterParticle(pa);
         }
         // update current best
         if (currentBestParticle() == null || f
@@ -129,7 +171,6 @@ public abstract class Swarm<V extends Velocity, F extends Fitness, P extends Pos
         pa.move(velocities.get(pa));
         pa.updateVelocity(velocities.get(pa));
       }
-
     }
   }
 

@@ -22,6 +22,8 @@ import org.shadowmask.core.mask.rules.generalizer.Generalizer;
 public class GeneralizerActorAdaptor<IN, OUT>
     implements GeneralizerActor<IN, OUT> {
 
+  private static final long serialVersionUID = 2107617150596653532L;
+
   public GeneralizerActorAdaptor(Generalizer<IN, OUT> generalizer, int level) {
     this.generalizer = generalizer;
     this.level = level;

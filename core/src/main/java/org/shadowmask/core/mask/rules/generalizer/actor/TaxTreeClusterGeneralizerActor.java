@@ -39,6 +39,10 @@ public class TaxTreeClusterGeneralizerActor
 
   private LeafLocator tree;
 
+  private int currentMaskLevel;
+
+  private int maxLevel;
+
   private Map<TaxTreeNode, GeneralizerActor> slaveMap = new HashMap<>();
 
   @Override public String generalize(Object s) {
@@ -59,6 +63,9 @@ public class TaxTreeClusterGeneralizerActor
     GeneralizerActor generalizer = slaveMap.get(leaf);
     if (generalizer == null) {
       generalizer = masterGeneralizer;
+    }
+    if(generalizer instanceof TaxTreeGeneralizerActor){
+      this.currentMaskLevel = ((TaxTreeGeneralizerActor)generalizer).getLevel();
     }
     return generalizer;
   }
@@ -97,6 +104,9 @@ public class TaxTreeClusterGeneralizerActor
   public TaxTreeClusterGeneralizerActor withMasterGeneralizer(
       GeneralizerActor masterGeneralizer) {
     this.masterGeneralizer = masterGeneralizer;
+    if(masterGeneralizer instanceof TaxTreeGeneralizerActor){
+      this.maxLevel = ((TaxTreeGeneralizerActor)masterGeneralizer).getMaxLevel();
+    }
     return this;
   }
 
@@ -117,5 +127,22 @@ public class TaxTreeClusterGeneralizerActor
 
   public Map<TaxTreeNode, GeneralizerActor> getSlaveMap() {
     return slaveMap;
+  }
+
+  @Override public String toString() {
+    String show = "";
+    show+=this.masterGeneralizer.toString();
+    for (GeneralizerActor actor : this.getSlaveMap().values()) {
+      show+=actor.toString();
+    }
+    return show;
+  }
+
+  public int getCurrentMaskLevel() {
+    return currentMaskLevel;
+  }
+
+  public int getMaxLevel() {
+    return maxLevel;
   }
 }

@@ -25,7 +25,7 @@ import org.shadowmask.core.algorithms.pso.Swarm;
 import org.shadowmask.core.domain.tree.TaxTree;
 import org.shadowmask.engine.spark.Rethrow;
 import org.shadowmask.engine.spark.autosearch.Executable;
-import org.shadowmask.engine.spark.autosearch.pso.cluster.ClusterMkVelocityCalculator;
+import org.shadowmask.engine.spark.autosearch.pso.cluster.LinearClusterMkVelocityCalculator;
 import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkPosition;
 import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkVelocity;
 
@@ -35,22 +35,28 @@ import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkVeloci
 public abstract class DataAnonymizePsoSearch<TABLE>
     extends Swarm<MkVelocity, MkFitness, MkPosition, MkParticle> {
 
-  MkVelocityCalculator calculator = new ClusterMkVelocityCalculator();
+  MkVelocityCalculator calculator = new LinearClusterMkVelocityCalculator();
+
   /**
    * dataset to be generalized .
    */
-  private TABLE privateTable;
+  protected TABLE privateTable;
+  private Long dataSize;
+  private Double outlierRate;
   /**
    * target k value .
    */
-  private int k = 10;
   private int maxSteps = 10;
   private int particleSize = 2;
   private int dimension = 7;
+
   private TaxTree[] trees;
   private int[] treeHeights;
   private List<MkParticle> particles = new ArrayList<>();
 
+  public void setCalculator(MkVelocityCalculator calculator) {
+    this.calculator = calculator;
+  }
 
   public void init() throws ClassNotFoundException {
     this.particles = new ArrayList<>();
@@ -69,17 +75,20 @@ public abstract class DataAnonymizePsoSearch<TABLE>
           TaxTreeClusterMkVelocity mkVelocity = new TaxTreeClusterMkVelocity();
           mkVelocity.setSize(DataAnonymizePsoSearch.this.dimension);
           mkVelocity.setLevelBounds(DataAnonymizePsoSearch.this.treeHeights);
+          mkVelocity.setTrees(trees);
           mkVelocity.init();
           return mkVelocity;
         }
       };
+      particle.setParticleDriver(this.velocityDriver());
       particles.add(particle);
     }
   }
 
-  
   protected abstract MkFitnessCalculator<TABLE> mkFitnessCalculator();
-  
+
+  protected abstract MkParticleDriver velocityDriver();
+
   @Override public List<MkParticle> particles() {
     return particles;
 
@@ -95,9 +104,10 @@ public abstract class DataAnonymizePsoSearch<TABLE>
                 privateTable);
       }
     };
+
     new Thread(executable).start();
     try {
-      synchronized (waitObject){
+      synchronized (waitObject) {
         waitObject.wait();
       }
     } catch (InterruptedException e) {
@@ -143,5 +153,33 @@ public abstract class DataAnonymizePsoSearch<TABLE>
 
   public void setTreeHeights(int[] treeHeights) {
     this.treeHeights = treeHeights;
+  }
+
+  public Double getOutlierRate() {
+    return outlierRate;
+  }
+
+  public void setOutlierRate(Double outlierRate) {
+    this.outlierRate = outlierRate;
+  }
+
+  public Long getDataSize() {
+    return dataSize;
+  }
+
+  public void setDataSize(Long dataSize) {
+    this.dataSize = dataSize;
+  }
+
+  public void setMaxSteps(int maxSteps) {
+    this.maxSteps = maxSteps;
+  }
+
+  public void setParticleSize(int particleSize) {
+    this.particleSize = particleSize;
+  }
+
+  public void setDimension(int dimension) {
+    this.dimension = dimension;
   }
 }

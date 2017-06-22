@@ -153,4 +153,8 @@ public class TaxTreeGeneralizerActor<IN, OUT>
   public void setdTree(LeafLocator<IN> dTree) {
     this.dTree = dTree;
   }
+
+  @Override public String toString() {
+    return this.level+"";
+  }
 }
