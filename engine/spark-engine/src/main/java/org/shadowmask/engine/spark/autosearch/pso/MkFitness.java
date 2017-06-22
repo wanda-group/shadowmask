@@ -18,6 +18,7 @@
 package org.shadowmask.engine.spark.autosearch.pso;
 
 import org.shadowmask.core.algorithms.pso.Fitness;
+import org.shadowmask.core.util.JsonUtil;
 
 public class MkFitness extends Fitness<MkFitness> {
 
@@ -27,7 +28,27 @@ public class MkFitness extends Fitness<MkFitness> {
 
   private double outlierSize;
 
+
+  private double depthRate;
+
+  private Double eLossRate;
+
+  public void setDepthRate(double depthRate) {
+    this.depthRate = depthRate;
+  }
+
+  private transient int ks[];
+  private transient String kcs[];
+  public void setKs(int[] ks) {
+    this.ks = ks;
+  }
+
+  public void setLossRate(Double eLossRate) {
+    this.eLossRate = eLossRate;
+  }
+
   @Override public boolean betterThan(MkFitness that) {
+//    return this.fitnessValue()*outlierSize < that.fitnessValue()*that.getOutlierSize();
     return this.fitnessValue() < that.fitnessValue();
   }
 
@@ -57,5 +78,13 @@ public class MkFitness extends Fitness<MkFitness> {
 
   public double fitnessValue() {
     return fitnessValue;
+  }
+
+  public void setKcs(String[] kcs) {
+    this.kcs = kcs;
+  }
+
+  @Override public String toString() {
+    return String.format("%s;%s;%s;%s",fitnessValue,outlierSize,eLossRate,depthRate);
   }
 }

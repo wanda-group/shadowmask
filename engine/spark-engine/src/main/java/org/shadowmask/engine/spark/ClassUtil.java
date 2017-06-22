@@ -19,8 +19,12 @@ package org.shadowmask.engine.spark;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 public class ClassUtil {
@@ -40,5 +44,16 @@ public class ClassUtil {
       e.printStackTrace();
     }
     return cloneObj;
+  }
+
+  public static void seriObject(Object object,String file){
+    try {
+      OutputStream os = new FileOutputStream(new File(file));
+      ObjectOutputStream obs = new ObjectOutputStream(os);
+      obs.writeObject(object);
+      obs.close();
+    } catch (Exception e) {
+      Rethrow.rethrow(e);
+    }
   }
 }

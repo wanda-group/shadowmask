@@ -38,6 +38,10 @@ public abstract class MkFitnessCalculator<TABLE> {
     executor = Executors.newFixedThreadPool(threadNums);
   }
 
+  public void shutdownExecutor(){
+    this.executor.shutdown();
+  }
+
   public void calculateFitness(final List<MkParticle> particles,
       final Map<MkParticle, MkFitness> fitnessMap, final Object waitObject,
       final TABLE dataSet) {
@@ -49,7 +53,7 @@ public abstract class MkFitnessCalculator<TABLE> {
           fitnessMap.put(particle, calculateOne(particle, dataSet));
         }
       };
-      executable.registerAfterSegment(new Segment() {
+      executable.registerFinallySegment(new Segment() {
         @Override public void run() {
           synchronized (waitObject){
             count.incrementAndGet();

@@ -25,6 +25,20 @@
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.tools.version}</artifactId>
+      <version>2.1.1</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-core_${scala.tools.version}</artifactId>
+      <version>2.1.1</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_${scala.tools.version}</artifactId>
       <version>1.6.2</version>
       <scope>compile</scope>
     </dependency>
@@ -35,13 +49,13 @@
       <version>1.6.2</version>
     </dependency>
 
+
     <dependency>
       <groupId>com.databricks</groupId>
       <artifactId>spark-csv_${scala.tools.version}</artifactId>
       <version>1.4.0</version>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -71,7 +85,29 @@
           </execution>
         </executions>
       </plugin>
-
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.5.5</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>org.shadowmask.engine.spark.TestPSOOnSpark</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

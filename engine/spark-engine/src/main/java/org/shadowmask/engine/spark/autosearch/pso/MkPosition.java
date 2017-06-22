@@ -17,6 +17,7 @@
  */
 package org.shadowmask.engine.spark.autosearch.pso;
 
+import java.util.Arrays;
 import org.shadowmask.core.algorithms.pso.Position;
 import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
 
@@ -50,5 +51,13 @@ public class MkPosition implements Position {
 
   public void setDimension(int dimension) {
     this.dimension = dimension;
+  }
+
+  @Override public String toString() {
+    String show = "";
+    for (GeneralizerActor actor : generalizerActors) {
+      show+="["+actor.toString()+"]\t";
+    }
+    return show;
   }
 }

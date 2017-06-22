@@ -22,6 +22,7 @@ import org.shadowmask.core.data.DataType;
 import org.shadowmask.core.domain.TaxTreeType;
 import org.shadowmask.core.domain.tree.LeafLocator;
 import org.shadowmask.core.domain.tree.TaxTree;
+import org.shadowmask.core.domain.tree.TaxTreeNode;
 import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeClusterGeneralizerActor;
 import org.shadowmask.core.mask.rules.generalizer.actor.TaxTreeGeneralizerActor;
 import org.shadowmask.engine.spark.autosearch.pso.MkPosition;
@@ -35,7 +36,7 @@ public class TaxTreeClusterMkPosition extends MkPosition {
     this.generalizerActors = new TaxTreeClusterGeneralizerActor[this.dimension];
     for (int i = 0; i < this.dimension; i++) {
       TaxTree tree = trees[i];
-//      DataType dataType = dataTypes[i];
+      //      DataType dataType = dataTypes[i];
       TaxTreeClusterGeneralizerActor actor =
           new TaxTreeClusterGeneralizerActor();
 
@@ -60,6 +61,13 @@ public class TaxTreeClusterMkPosition extends MkPosition {
       actor.withMasterGeneralizer(innerActor.withMaxLevel(maxLevel)
           .withLevel(new Random().nextInt(maxLevel + 1)).withDTreeAsTax(tree))
           .withTree((LeafLocator) tree);
+      for (Object node : tree.getLeaves()) {
+        TaxTreeNode treeNode = (TaxTreeNode) node;
+        TaxTreeGeneralizerActor slaveActor = new TaxTreeGeneralizerActor();
+        slaveActor.withMaxLevel(maxLevel)
+            .withLevel(new Random().nextInt(maxLevel + 1)).withDTreeAsTax(tree);
+        actor.getSlaveMap().put(treeNode, slaveActor);
+      }
 
       this.generalizerActors[i] = actor;
     }

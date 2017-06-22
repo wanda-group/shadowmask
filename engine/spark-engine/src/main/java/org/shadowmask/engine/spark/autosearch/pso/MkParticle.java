@@ -25,6 +25,7 @@ public abstract class MkParticle
 
   private MkParticleDriver particleDriver;
 
+
   @Override public void move(MkVelocity mkVelocity) {
     MkPosition position = this.currentPosition();
     // check null
@@ -58,5 +59,9 @@ public abstract class MkParticle
       MkParticleDriver particleDriver) {
     this.particleDriver = particleDriver;
     return this;
+  }
+
+  public void setParticleDriver(MkParticleDriver particleDriver) {
+    this.particleDriver = particleDriver;
   }
 }
