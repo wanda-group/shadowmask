@@ -17,7 +17,8 @@
  */
 package org.shadowmask.engine.spark
 
-import org.apache.spark.sql.{Column, UserDefinedFunction}
+import org.apache.spark.sql.Column
+import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.shadowmask.core.AnonymityFieldType
 import org.shadowmask.engine.spark.hierarchy.Hierarchy
 import org.shadowmask.engine.spark.hierarchy.aggregator.AggregatorType.AggType

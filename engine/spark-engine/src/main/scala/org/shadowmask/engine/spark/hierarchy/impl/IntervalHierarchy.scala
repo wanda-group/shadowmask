@@ -17,7 +17,7 @@
  */
 package org.shadowmask.engine.spark.hierarchy.impl
 
-import org.apache.spark.sql.UserDefinedFunction
+import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.udf
 import org.shadowmask.engine.spark.hierarchy.Hierarchy
 import org.shadowmask.engine.spark.hierarchy.mask.RangeRule
@@ -26,7 +26,7 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
-class IntervalHierarchy[T: Numeric: ClassTag: TypeTag](bottom: T, top: T, step: T, level: Int) extends Hierarchy[T, Int] {
+class IntervalHierarchy[T: Numeric : ClassTag : TypeTag](bottom: T, top: T, step: T, level: Int) extends Hierarchy[T, Int] {
   override def rootHierarchyLevel: Int = level
 
   override def getUDF(hierarchy: Int): UserDefinedFunction = udf(getMaskRule(hierarchy))
