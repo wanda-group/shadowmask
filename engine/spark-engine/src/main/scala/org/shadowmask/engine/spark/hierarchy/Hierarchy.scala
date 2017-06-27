@@ -17,7 +17,7 @@
  */
 package org.shadowmask.engine.spark.hierarchy
 
-import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.UserDefinedFunction
 
 
 trait Hierarchy[IN, OUT] {

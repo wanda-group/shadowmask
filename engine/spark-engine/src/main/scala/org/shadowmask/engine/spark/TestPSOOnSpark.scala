@@ -25,22 +25,23 @@ import org.shadowmask.core.data.DataType
 import org.shadowmask.core.domain.TaxTreeFactory
 import org.shadowmask.core.domain.tree.{CategoryTaxTree, IntegerTaxTree, TaxTree, TaxTreeNode}
 import org.shadowmask.engine.spark.autosearch.pso.SparkDrivedDataAnoymizePSOSearch
-import org.shadowmask.engine.spark.autosearch.pso.cluster.{CombineClusterMkVelocityCalculator, LinearClusterMkVelocityCalculator}
+import org.shadowmask.engine.spark.autosearch.pso.SparkDrivedDataAnoymizePSOSearch.RddReplicatedSparkDrivedFitnessCalculator
+import org.shadowmask.engine.spark.autosearch.pso.cluster.CombineClusterMkVelocityCalculator
 
 
 object TestPSOOnSpark {
   def main(args: Array[String]): Unit = {
     //    val conf = new SparkConf().setAppName("shadowmask").setMaster("spark://testbig1.wanda.cn:7077")
     val conf = new SparkConf().setAppName("shadowmask").setMaster(args(0))
-    conf.set("spark.defalut.parallelism",args(3))
+    conf.set("spark.defalut.parallelism", args(3))
     val sc = new SparkContext(conf)
     val sourceRdd = sc.textFile(args(1) + "/adult.data", args(4).toInt).filter(_.trim.length > 0)
       .map(s => {
         val sp = s.split(",")
         Array[String](sp(0), sp(1), sp(3), sp(5), sp(8), sp(9), sp(13), sp(14), sp(6)).map(_.trim).mkString(",")
       })
-      .repartition(args(5).toInt)
-      .cache()
+//      .repartition(args(5).toInt)
+    //      .cache()
     val contryTree = TaxTreeFactory.getTree[CategoryTaxTree](DataType.STRING)
     contryTree.constructFromYamlInputStream(new FileInputStream(args(2) + "/contry.yaml"))
     //    contryTree.constructFromYamlInputStream(this.getClass.getClassLoader.getResourceAsStream(args(1) + "/contry.yaml"))
@@ -100,6 +101,7 @@ object TestPSOOnSpark {
     val indexBrodcast = sc.broadcast(index)
 
     val searcher = new SparkDrivedDataAnoymizePSOSearch(args(6).toInt)
+    searcher.setCalculator(new RddReplicatedSparkDrivedFitnessCalculator(args(6).toInt, args(7).toInt, args(8).toInt))
     searcher.setSc(sc)
     searcher.setPrivateTable(sourceRdd)
     searcher.setTrees(trees)
@@ -108,7 +110,6 @@ object TestPSOOnSpark {
     searcher.setTreeHeights(trees.map(_.getHeight))
     searcher.setSeparator(separator)
     searcher.setDataGeneralizerIndex(indexBrodcast)
-    searcher.setDataSize(sourceRdd.count())
     searcher.setDataSize(count.value)
     searcher.setOutlierRate(0.001)
     searcher.setTargetK(10)
