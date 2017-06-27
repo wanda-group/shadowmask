@@ -27,6 +27,7 @@ import org.shadowmask.engine.spark._
 import org.shadowmask.core.AnonymityFieldType
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.collection.mutable._
 
 object DataAnoymizeFunction {
@@ -155,7 +156,7 @@ object DataAnoymizeFunction {
           (c1._1 + c2._1, c1._2 + c2._2, c1._3 + c2._3)
         }
       )
-//    val ks = eqClasses.map(ec => ec._2 + "----" + ec._1).collect()
+    //    val ks = eqClasses.map(ec => ec._2 + "----" + ec._1).collect()
 
     val ek = eqClasses
       .map(
@@ -215,58 +216,49 @@ object DataAnoymizeFunction {
   }
 
 
-  def lDiversityCompute(sc: SparkContext, sourceRdd: RDD[String], gMap: Map[Int, AnonymityFieldType], fieldSeapartor: Broadcast[String]): RDD[String] = {
-    var lParam = 0
+  def lDiversityCompute(sc: SparkContext, sourceRdd: RDD[String], gMap: Map[Int, AnonymityFieldType], fieldSeapartor: Broadcast[String]): RDD[(String, Iterable[String])] = {
+
     val gMapArray = gMap.toArray
     var quasiIdentifier: List[Int] = List()
     var sensitiveInfo: List[Int] = List()
-    sc.parallelize(gMapArray).map(tuple => {
-      val fieldKey = tuple._2
-      val fieldValue = tuple._1
-      (fieldKey, fieldValue)
-    })
-      .groupByKey()
-      .collect()
-      .map(tu => {
-        if (tu._1.toString.equals("QUSI_IDENTIFIER")) {
-          quasiIdentifier ++= tu._2.toList.sortWith(_ < _)
-          quasiIdentifier
-        } else if (tu._1.toString.equals("SENSITIVE")) {
-          sensitiveInfo ++= tu._2.toList.sortWith(_ < _)
-          sensitiveInfo
-        }
-      })
+
+    for (i <- 0 to gMap.keySet.max) {
+      if (gMap.keySet.contains(i) && gMap(i).equals(AnonymityFieldType.QUSI_IDENTIFIER)) {
+        quasiIdentifier ++= Set(i).toList.sortWith(_ < _)
+      }
+      if (gMap.keySet.contains(i) && gMap(i).equals(AnonymityFieldType.SENSITIVE)) {
+        sensitiveInfo ++= Set(i).toList.sortWith(_ < _)
+      }
+    }
     val selectRdd =
       sourceRdd.filter(_.trim.length > 0).map(s => {
         val sp = s.split(fieldSeapartor.value).map(_.trim)
         val quasiIdentifierArray: Array[Int] = quasiIdentifier.toArray
         val sensitiveInfoArray: Array[Int] = sensitiveInfo.toArray
-        var quasiIdentifierString: String = ""
-        var sensitiveInfoString: String = ""
+        var quasiIdentifierString: ArrayBuffer[String] = ArrayBuffer()
+        var sensitiveInfoString: ArrayBuffer[String] = ArrayBuffer()
 
         for (i <- quasiIdentifierArray) {
-          quasiIdentifierString += sp(i) + fieldSeapartor.value
+          quasiIdentifierString += sp(i)
         }
         for (i <- sensitiveInfoArray) {
-          sensitiveInfoString += sp(i) + fieldSeapartor.value
+          sensitiveInfoString += sp(i)
         }
-        (quasiIdentifierString, sensitiveInfoString)
+        (quasiIdentifierString.mkString(fieldSeapartor.value), sensitiveInfoString.mkString(fieldSeapartor.value))
       })
-        .cache()
 
     val count = sc.broadcast(selectRdd.count())
-    val targetl = sc.broadcast(lParam)
     val tableSize = sc.broadcast(count)
 
-    val selectRddCompute: RDD[String] = selectRdd.map(s => ((s._1), s._2))
-      .distinct()
+    val selectRddCompute: RDD[(String, Iterable[String])] = selectRdd.map(s => (s._1, s._2))
       .groupByKey()
       .map(tu => {
         val key = tu._1
-        val values = tu._2
-        lParam = values.size
-        ((key, values), lParam).toString()
-      })
+        val values = tu._2.toArray
+        (key, values)
+      }
+      )
+
     selectRddCompute
   }
 }
