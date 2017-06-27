@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,22 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.hierarchy.impl
+package org.shadowmask.engine.spark
 
-import org.apache.spark.sql.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
-import org.shadowmask.engine.spark.hierarchy.Hierarchy
-import org.shadowmask.engine.spark.hierarchy.mask.MaskRule
+import org.apache.spark.rdd.RDD
 
-class MaskHierarchy(alignLeft: Boolean,
-                    maskLeft: Boolean,
-                    maskChar: Char = '*') extends Hierarchy[String, String] {
 
-  override def rootHierarchyLevel: Int = -1
+object JavaHelper {
 
-  override def getUDF(hierarchy: Int): UserDefinedFunction = udf(getMaskRule(hierarchy))
+  // rdd repartition
+  def rddRepartition[T](rdd: RDD[T], partitions: Int): RDD[T] = rdd.repartition(partitions)
 
-  def getMaskRule(hierarchy: Int): (String) => String = {
-    new MaskRule(alignLeft, maskLeft, hierarchy, maskChar).mask
-  }
 }
