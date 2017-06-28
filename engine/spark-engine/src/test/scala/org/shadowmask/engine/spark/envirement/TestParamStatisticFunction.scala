@@ -1,32 +1,31 @@
 package org.shadowmask.engine.spark.envirement
 
-import org.apache.spark.{SparkConf, SparkContext}
 import org.shadowmask.core.AnonymityFieldType
 import org.shadowmask.engine.spark.functions.DataAnoymizeFunction.lDiversityCompute
-
+import org.apache.spark.{SparkConf, SparkContext}
+import org.shadowmask.engine.spark.functions.ParamStatisticFunction
 import scala.collection.mutable.Map
 
 
-object TestLDiversitySparkTask {
+object TestParamStatisticFunction {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("name").setMaster("local")
     val sc = new SparkContext(conf)
-    val sourceRdd = sc.textFile(this.getClass.getClassLoader.getResource("adult.data").getPath)
+    val sourceRdd = sc.textFile(this.getClass.getClassLoader.getResource("test2.csv").getPath)
     val dataSize = sourceRdd.count()
     val fieldSeapartor = sc.broadcast(",")
 
     var gMap: Map[Int, AnonymityFieldType] = Map()
     gMap += (1 -> AnonymityFieldType.QUSI_IDENTIFIER)
-    gMap += (3 -> AnonymityFieldType.QUSI_IDENTIFIER)
-    gMap += (5 -> AnonymityFieldType.QUSI_IDENTIFIER)
-    gMap += (8 -> AnonymityFieldType.QUSI_IDENTIFIER)
-    gMap += (9 -> AnonymityFieldType.QUSI_IDENTIFIER)
-    gMap += (13 -> AnonymityFieldType.QUSI_IDENTIFIER)
-    gMap += (14 -> AnonymityFieldType.SENSITIVE)
-    gMap += (6 -> AnonymityFieldType.SENSITIVE)
+    gMap += (2 -> AnonymityFieldType.QUSI_IDENTIFIER)
+    gMap += (5 -> AnonymityFieldType.SENSITIVE)
 
     val lRdd = lDiversityCompute(sc, sourceRdd, gMap, fieldSeapartor)
-    lRdd.foreach(println(_))
+
+    val statisticResult = ParamStatisticFunction.statisticCaculate(sc, lRdd)
+    println(statisticResult)
+
+
     sc.stop()
 
   }
