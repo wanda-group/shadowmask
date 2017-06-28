@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,22 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.engine.spark.hierarchy.impl
+package org.shadowmask.api.programming.hierarchy;
 
-import org.apache.spark.sql.UserDefinedFunction
-import org.apache.spark.sql.functions.udf
-import org.shadowmask.engine.spark.hierarchy.Hierarchy
-import org.shadowmask.engine.spark.hierarchy.mask.MaskRule
+import org.shadowmask.core.data.DataType;
 
-class MaskHierarchy(alignLeft: Boolean,
-                    maskLeft: Boolean,
-                    maskChar: Char = '*') extends Hierarchy[String, String] {
+public abstract class Hierarchy {
 
-  override def rootHierarchyLevel: Int = -1
-
-  override def getUDF(hierarchy: Int): UserDefinedFunction = udf(getMaskRule(hierarchy))
-
-  def getMaskRule(hierarchy: Int): (String) => String = {
-    new MaskRule(alignLeft, maskLeft, hierarchy, maskChar).mask
+  public static <H extends Hierarchy> H create(DataType type) {
+    switch (type) {
+    case STRING:
+      return (H) new ValueBasedHierarchy();
+    default:
+      H h = (H) new IntervalBasedHierarchy().setDataType(type);
+      return h;
+    }
   }
+
+  /**
+   * json string used to build taxonomy tree {@see org.shadowmask.core.domain.tree.TaxTree}
+   *
+   * @return
+   */
+  public abstract String hierarchyJson();
+
+  public abstract DataType dataType();
 }

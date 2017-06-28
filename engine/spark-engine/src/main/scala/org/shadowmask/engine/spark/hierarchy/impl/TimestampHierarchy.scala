@@ -7,7 +7,7 @@ import org.shadowmask.engine.spark.hierarchy.mask.TimestampRule
 
 class TimestampHierarchy(alignLeft: Boolean,
                          maskLeft: Boolean,
-                         maskChar: Char = '*') extends Hierarchy[String, String]{
+                         maskChar: Char = '*') extends Hierarchy[String, String] {
 
   override def rootHierarchyLevel: Int = -1
 

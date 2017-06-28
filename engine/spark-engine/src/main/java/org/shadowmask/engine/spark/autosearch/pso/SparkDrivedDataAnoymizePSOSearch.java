@@ -23,16 +23,16 @@ import java.util.Map;
 import org.apache.spark.SparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.rdd.RDD;
+import org.javatuples.Pair;
 import org.shadowmask.core.mask.rules.generalizer.actor.GeneralizerActor;
+import org.shadowmask.core.util.Predictor;
 import org.shadowmask.engine.spark.ClassUtil;
 import org.shadowmask.engine.spark.FileUtil;
-import org.shadowmask.engine.spark.autosearch.pso.DataAnonymizePsoSearch;
-import org.shadowmask.engine.spark.autosearch.pso.MkFitness;
-import org.shadowmask.engine.spark.autosearch.pso.MkFitnessCalculator;
-import org.shadowmask.engine.spark.autosearch.pso.MkParticle;
-import org.shadowmask.engine.spark.autosearch.pso.MkParticleDriver;
+import org.shadowmask.engine.spark.JavaHelper;
 import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkParticleDriver;
 import org.shadowmask.engine.spark.functions.DataAnoymizeFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 import scala.Tuple3;
 import scala.Tuple5;
@@ -43,13 +43,12 @@ public class SparkDrivedDataAnoymizePSOSearch
   SparkDrivedFitnessCalculator calculator;
   MkParticleDriver driver = new TaxTreeClusterMkParticleDriver();
   private int threadNum;
-  private String knFile = "/Users/liyh/Desktop/kn.txt";
-  private String objectFile = "/Users/liyh/Desktop/particle.object";
-  private String tableFile = "/Users/liyh/Desktop/table.txt";
+  private String knFile = "./kn.txt";
+  private String objectFile = "./particle.object";
+  private String tableFile = "./table.txt";
 
   public SparkDrivedDataAnoymizePSOSearch(int threadNum) {
     this.threadNum = threadNum;
-    calculator = new SparkDrivedFitnessCalculator(threadNum);
   }
 
   public RDD<String> currentBestMaskResult() {
@@ -95,6 +94,10 @@ public class SparkDrivedDataAnoymizePSOSearch
 
   public void setQusiIndexes(int[] qusiIndexes) {
     this.calculator.qusiIndexes = qusiIndexes;
+  }
+
+  public void setCalculator(SparkDrivedFitnessCalculator calculator) {
+    this.calculator = calculator;
   }
 
   @Override public void updateGlobalBestParticle(MkParticle particle) {
@@ -200,7 +203,7 @@ public class SparkDrivedDataAnoymizePSOSearch
               .anoymizeWithRecordDepth(sc, dataSet, particle, separator,
                   dataGeneralizerIndex);
 
-      anoymizedTable.cache();
+//      anoymizedTable.cache();
       //      Object samples = anoymizedTable.sample(false,0.01,System.currentTimeMillis()).collect();
       //      String [] sampleArr = (String[]) samples;
       //      for (String s : sampleArr) {
@@ -221,8 +224,8 @@ public class SparkDrivedDataAnoymizePSOSearch
       Double eLoss = 1 - ek._1() / this.totalEntropy;
       Double depthLoss = ek._3().doubleValue() / ek._4();
       MkFitness fitness = new MkFitness();
-      fitness.setFitnessValue(
-          (badKRate + 0.5) * (eLoss + 0.5) * (depthLoss + 2));
+      fitness
+          .setFitnessValue((badKRate + 0.5) * (eLoss + 0.5) * (depthLoss + 2));
       fitness.setOutlierSize(java.lang.Double.valueOf(ek._1().toString()));
       fitness.setOutlierSize(badKRate);
       fitness.setLossRate(eLoss);
@@ -232,6 +235,87 @@ public class SparkDrivedDataAnoymizePSOSearch
       particle.setCurrentFitness(fitness);
 
       return fitness;
+    }
+  }
+
+  public static class RddReplicatedSparkDrivedFitnessCalculator
+      extends SparkDrivedFitnessCalculator {
+
+    private static final Logger logger  = LoggerFactory.getLogger(RddReplicatedSparkDrivedFitnessCalculator.class);
+    /**
+     * how many rdd will bee replicated
+     */
+    private int rddReplicateFactor;
+
+    private RDD<String>[] replicatedRdds;
+
+    private int[] rddMapedNums;
+
+    private int currentRddReplicatdNums = 0;
+
+    private int rddPartitions;
+
+    private RddReplicatedSparkDrivedFitnessCalculator(int threadNums) {
+      super(threadNums);
+    }
+
+    public RddReplicatedSparkDrivedFitnessCalculator(int threadNums,
+        int rddReplicateFactor, int rddPartitions) {
+      super(threadNums);
+      Predictor
+          .predict(rddReplicateFactor > 0, "rdd replication factor must > 0");
+      Predictor.predict(rddPartitions > 0, "rdd repartition  factor must > 0");
+      this.rddReplicateFactor = rddReplicateFactor;
+      this.replicatedRdds = new RDD[this.rddReplicateFactor];
+      this.rddMapedNums = new int[this.rddReplicateFactor];
+      this.rddPartitions = rddPartitions;
+    }
+
+    @Override public MkFitness calculateOne(MkParticle particle,
+        RDD<String> dataSet) {
+      Pair<RDD<String>, Integer> mapedRddPair = null;
+      try {
+        mapedRddPair = this.mapToNewDataSet(dataSet);
+
+        return super.calculateOne(particle, mapedRddPair.getValue0());
+      } finally {
+        if(mapedRddPair !=null){
+          releaseRdd(mapedRddPair.getValue1());
+        }
+      }
+
+    }
+
+    public synchronized Pair<RDD<String>, Integer> mapToNewDataSet(
+        RDD<String> originDataSet) {
+      if (currentRddReplicatdNums < rddReplicateFactor) {
+        RDD<String> newRDD =
+            JavaHelper.rddRepartition(originDataSet, this.rddPartitions)
+                // catch for frequency usage
+                .cache();
+        replicatedRdds[currentRddReplicatdNums] = newRDD;
+        rddMapedNums[currentRddReplicatdNums] = 1;
+        logger.info("fetch rdd at index(new one) : "+ currentRddReplicatdNums);
+        ++currentRddReplicatdNums;
+        return new Pair<>(newRDD, currentRddReplicatdNums - 1);
+      } else {
+        int num = rddMapedNums[0];
+        int index = 0;
+        for (int i = 1; i < rddMapedNums.length; i++) {
+          if (rddMapedNums[i] < num) {
+            num = rddMapedNums[i];
+            index = i;
+          }
+        }
+        rddMapedNums[index]++;
+        logger.info("fetch rdd at index(cached) : "+ index);
+        return new Pair<>(replicatedRdds[index], index);
+      }
+    }
+
+    public void releaseRdd(Integer index) {
+      logger.info("release rdd at index : "+ index);
+      rddMapedNums[index]--;
     }
   }
 }
