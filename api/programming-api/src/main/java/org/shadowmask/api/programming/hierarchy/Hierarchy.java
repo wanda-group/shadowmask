@@ -21,14 +21,24 @@ import org.shadowmask.core.data.DataType;
 
 public abstract class Hierarchy {
 
+  private DataType dataType;
+
   public static <H extends Hierarchy> H create(DataType type) {
+    H h = null;
     switch (type) {
     case STRING:
-      return (H) new ValueBasedHierarchy();
+      h = (H) new ValueBasedHierarchy();
+      break;
     default:
-      H h = (H) new IntervalBasedHierarchy().setDataType(type);
-      return h;
+      h = (H) new IntervalBasedHierarchy().setDataType(type);
     }
+    h.setDataType(type);
+    return h;
+  }
+
+  public Hierarchy setDataType(DataType dataType) {
+    this.dataType = dataType;
+    return this;
   }
 
   /**
@@ -38,5 +48,8 @@ public abstract class Hierarchy {
    */
   public abstract String hierarchyJson();
 
-  public abstract DataType dataType();
+  public DataType dataType() {
+    return this.dataType;
+  }
+
 }

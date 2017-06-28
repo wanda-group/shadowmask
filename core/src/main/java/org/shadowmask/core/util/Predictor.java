@@ -24,4 +24,10 @@ public class Predictor {
       throw new RuntimeException(message);
     }
   }
+
+  public static void predict(boolean condition, String message ,String... values) {
+    if(!condition){
+      throw new RuntimeException(String.format(message,values));
+    }
+  }
 }

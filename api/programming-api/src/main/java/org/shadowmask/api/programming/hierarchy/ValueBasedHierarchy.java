@@ -18,11 +18,17 @@
 
 package org.shadowmask.api.programming.hierarchy;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.shadowmask.core.data.DataType;
 import org.shadowmask.core.util.JsonUtil;
 import org.shadowmask.core.util.Predictor;
 
@@ -48,31 +54,124 @@ public class ValueBasedHierarchy extends Hierarchy {
     }
     ValueNode pointer = rootNode;
     for (int i = values.length - 1; i >= 0; i--) {
+      String valuei = values[i].trim();
       if (pointer.children == null) {
         pointer.children = new HashSet<>();
         pointer.nodeMap = new HashMap<>();
       }
       ValueNode nextNode = null;
-      if (!pointer.nodeMap.containsKey(values[i])) {
+      if (!pointer.nodeMap.containsKey(valuei)) {
         nextNode = new ValueNode();
-        nextNode.text = values[i];
-        pointer.nodeMap.put(values[i], nextNode);
+        nextNode.text = valuei;
+        pointer.nodeMap.put(valuei, nextNode);
         pointer.children.add(nextNode);
       } else {
-        nextNode = pointer.nodeMap.get(values[i]);
+        nextNode = pointer.nodeMap.get(valuei);
       }
       pointer = nextNode;
     }
     return this;
   }
 
-  @Override public String hierarchyJson() {
-    return JsonUtil.newGsonInstance()
-        .toJson(new HierarchyJsonObject(this.rootNode));
+  /**
+   * add batch
+   *
+   * @param iterator
+   * @return
+   */
+  public ValueBasedHierarchy addBatch(Iterator<String[]> iterator) {
+    if (iterator != null) {
+      while (iterator.hasNext()) {
+        this.add(iterator.next());
+      }
+    }
+    return this;
   }
 
-  @Override public DataType dataType() {
-    return DataType.STRING;
+  public ValueBasedHierarchy addBatch(Iterator<String> iterator,
+      String separator) {
+    if (iterator != null) {
+      while (iterator.hasNext()) {
+        this.add(iterator.next().split(separator));
+      }
+    }
+    return this;
+  }
+
+  public ValueBasedHierarchy addBatch(final String[][] values) {
+    if (values == null) {
+      return this;
+    }
+    this.addBatch(new Iterator<String[]>() {
+      int i = 0;
+
+      @Override public boolean hasNext() {
+        return i < values.length;
+      }
+
+      @Override public String[] next() {
+        return values[i++];
+      }
+
+      @Override public void remove() {
+
+      }
+    });
+    return this;
+  }
+
+  public ValueBasedHierarchy addBatch(final String[] values,
+      final String separator) {
+    if (values == null) {
+      return this;
+    }
+    this.addBatch(new Iterator<String>() {
+      int i = 0;
+
+      @Override public boolean hasNext() {
+        return i < values.length;
+      }
+
+      @Override public String next() {
+        return values[i++];
+      }
+
+      @Override public void remove() {
+      }
+    }, separator);
+    return this;
+  }
+
+  public ValueBasedHierarchy addBatch(InputStream in, String separator)
+      throws IOException {
+    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+    String lineTxt = null;
+    while ((lineTxt = br.readLine()) != null) {
+      if (lineTxt.trim().equals("")) {
+        continue;
+      }
+      String[] names = lineTxt.split(separator);
+      this.add(names);
+    }
+    return this;
+  }
+
+  public ValueBasedHierarchy addBatch(File file, String separator)
+      throws IOException {
+    return this.addBatch(new FileInputStream(file), separator);
+  }
+
+  public ValueBasedHierarchy addBatch(String filePath, String separator)
+      throws IOException {
+    return this.addBatch(new File(filePath), separator);
+  }
+
+  @Override public String hierarchyJson() {
+    ValueNode node = this.rootNode;
+    if (node.children != null && node.children.size() == 1) {
+      node = node.children.iterator().next();
+    }
+    return JsonUtil.newGsonInstance().toJson(new HierarchyJsonObject(node));
   }
 
   class HierarchyJsonObject {
