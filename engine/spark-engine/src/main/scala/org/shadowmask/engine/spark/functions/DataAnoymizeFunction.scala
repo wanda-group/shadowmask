@@ -216,13 +216,13 @@ object DataAnoymizeFunction {
   }
 
 
-  def lDiversityCompute(sc: SparkContext, sourceRdd: RDD[String], gMap: Map[Int, AnonymityFieldType], fieldSeapartor: Broadcast[String]): RDD[(String, Iterable[String])] = {
+  def lDiversityCompute(sc: SparkContext, sourceRdd: RDD[String], gMap: Map[Int, AnonymityFieldType], fieldSeapartor: Broadcast[String]): RDD[(String, String)] = {
 
     val gMapArray = gMap.toArray
     var quasiIdentifier: List[Int] = List()
     var sensitiveInfo: List[Int] = List()
 
-    for (i <- 0 to gMap.keySet.max) {
+    for (i <- gMap.keySet) {
       if (gMap.keySet.contains(i) && gMap(i).equals(AnonymityFieldType.QUSI_IDENTIFIER)) {
         quasiIdentifier ++= Set(i).toList.sortWith(_ < _)
       }
@@ -239,10 +239,10 @@ object DataAnoymizeFunction {
         var sensitiveInfoString: ArrayBuffer[String] = ArrayBuffer()
 
         for (i <- quasiIdentifierArray) {
-          quasiIdentifierString += sp(i)
+          quasiIdentifierString += sp(i - 1)
         }
-        for (i <- sensitiveInfoArray) {
-          sensitiveInfoString += sp(i)
+        for (j <- sensitiveInfoArray) {
+          sensitiveInfoString += sp(j - 1)
         }
         (quasiIdentifierString.mkString(fieldSeapartor.value), sensitiveInfoString.mkString(fieldSeapartor.value))
       })
@@ -250,15 +250,6 @@ object DataAnoymizeFunction {
     val count = sc.broadcast(selectRdd.count())
     val tableSize = sc.broadcast(count)
 
-    val selectRddCompute: RDD[(String, Iterable[String])] = selectRdd.map(s => (s._1, s._2))
-      .groupByKey()
-      .map(tu => {
-        val key = tu._1
-        val values = tu._2.toArray
-        (key, values)
-      }
-      )
-
-    selectRddCompute
+    selectRdd
   }
 }
