@@ -23,7 +23,6 @@ object TestParamStatisticFunction {
     val lRdd = lDiversityCompute(sc, sourceRdd, gMap, fieldSeapartor)
     val result = statisticFunction.paramsStatistic(sc, lRdd)
 
-    result.foreach(println(_))
     sc.stop()
 
   }
