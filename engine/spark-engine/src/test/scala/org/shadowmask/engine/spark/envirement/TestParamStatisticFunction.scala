@@ -4,6 +4,7 @@ import org.shadowmask.core.AnonymityFieldType
 import org.shadowmask.engine.spark.functions.DataAnoymizeFunction.lDiversityCompute
 import org.shadowmask.engine.spark.functions.StatisticFunction
 import org.apache.spark.{SparkConf, SparkContext}
+
 import scala.collection.mutable.Map
 
 
@@ -21,7 +22,16 @@ object TestParamStatisticFunction {
     gMap += (5 -> AnonymityFieldType.SENSITIVE)
 
     val lRdd = lDiversityCompute(sc, sourceRdd, gMap, fieldSeapartor)
-    val result = StatisticFunction.paramsStatistic(sc, lRdd)
+
+    val fractionRdd = StatisticFunction.convertIntToFraction(sc, lRdd)
+    val entropyRdd = StatisticFunction.convertFractionToEntropy(fractionRdd)
+    val fractionStatisticResult = StatisticFunction.fractionCalculate(fractionRdd)
+
+    sourceRdd.foreach(println(_))
+    lRdd.foreach(println(_))
+    fractionRdd.foreach(println(_))
+    entropyRdd.foreach(println(_))
+    fractionStatisticResult.foreach(println(_))
 
     sc.stop()
 
