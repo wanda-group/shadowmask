@@ -2,8 +2,9 @@ package org.shadowmask.engine.spark.envirement
 
 import org.shadowmask.core.AnonymityFieldType
 import org.shadowmask.engine.spark.functions.DataAnoymizeFunction.lDiversityCompute
+import org.shadowmask.engine.spark.functions.StatisticFunction
 import org.apache.spark.{SparkConf, SparkContext}
-import org.shadowmask.engine.spark.functions.ParamStatisticFunction
+
 import scala.collection.mutable.Map
 
 
@@ -22,10 +23,27 @@ object TestParamStatisticFunction {
 
     val lRdd = lDiversityCompute(sc, sourceRdd, gMap, fieldSeapartor)
 
-    val statisticResult = ParamStatisticFunction.statisticCaculate(sc, lRdd)
-    println(statisticResult)
+    val sensitiveInfo = StatisticFunction.countSensitiveInfo(sc, lRdd)
+    val fractionRdd = StatisticFunction.convertIntToFraction(sensitiveInfo)
+    val entropyRdd = StatisticFunction.convertFractionToEntropy(fractionRdd)
+    val fractionStatisticResult = StatisticFunction.fractionStatistics(fractionRdd)
+    val sensitiveInfoResult = StatisticFunction.fractionStatistics(sensitiveInfo)
+    val calculateEntropyResult = StatisticFunction.calculateEntropy(entropyRdd)
+    val entropyMaxResult = StatisticFunction.calculateMax(calculateEntropyResult)
+    val entropyMinResult = StatisticFunction.calculateMin(calculateEntropyResult)
+    val entropyMeanResult = StatisticFunction.calculateMean(calculateEntropyResult)
 
-
+    sourceRdd.foreach(println(_))
+    lRdd.foreach(println(_))
+    sensitiveInfo.foreach(println(_))
+    fractionRdd.foreach(println(_))
+    entropyRdd.foreach(println(_))
+    calculateEntropyResult.foreach(println(_))
+    fractionStatisticResult.foreach(println(_))
+    sensitiveInfoResult.foreach(println(_))
+    println(entropyMaxResult)
+    println(entropyMinResult)
+    println(entropyMeanResult)
     sc.stop()
 
   }
