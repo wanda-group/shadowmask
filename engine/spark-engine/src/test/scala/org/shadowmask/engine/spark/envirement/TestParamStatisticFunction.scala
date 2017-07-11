@@ -23,16 +23,27 @@ object TestParamStatisticFunction {
 
     val lRdd = lDiversityCompute(sc, sourceRdd, gMap, fieldSeapartor)
 
-    val fractionRdd = StatisticFunction.convertIntToFraction(sc, lRdd)
+    val sensitiveInfo = StatisticFunction.countSensitiveInfo(sc, lRdd)
+    val fractionRdd = StatisticFunction.convertIntToFraction(sensitiveInfo)
     val entropyRdd = StatisticFunction.convertFractionToEntropy(fractionRdd)
-    val fractionStatisticResult = StatisticFunction.fractionCalculate(fractionRdd)
+    val fractionStatisticResult = StatisticFunction.fractionStatistics(fractionRdd)
+    val sensitiveInfoResult = StatisticFunction.fractionStatistics(sensitiveInfo)
+    val calculateEntropyResult = StatisticFunction.calculateEntropy(entropyRdd)
+    val entropyMaxResult = StatisticFunction.calculateMax(calculateEntropyResult)
+    val entropyMinResult = StatisticFunction.calculateMin(calculateEntropyResult)
+    val entropyMeanResult = StatisticFunction.calculateMean(calculateEntropyResult)
 
     sourceRdd.foreach(println(_))
     lRdd.foreach(println(_))
+    sensitiveInfo.foreach(println(_))
     fractionRdd.foreach(println(_))
     entropyRdd.foreach(println(_))
+    calculateEntropyResult.foreach(println(_))
     fractionStatisticResult.foreach(println(_))
-
+    sensitiveInfoResult.foreach(println(_))
+    println(entropyMaxResult)
+    println(entropyMinResult)
+    println(entropyMeanResult)
     sc.stop()
 
   }
