@@ -20,6 +20,7 @@
     <scalatra.scala.version>2.11</scalatra.scala.version>
     <jetty.version>9.3.11.M0</jetty.version>
     <akka.scala.version>2.11</akka.scala.version>
+    <scala.version>2.11.7</scala.version>
     <akka.version>2.4.11</akka.version>
   </properties>
   <dependencies>

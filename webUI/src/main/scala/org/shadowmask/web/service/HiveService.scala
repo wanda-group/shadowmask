@@ -174,7 +174,7 @@ class HiveService {
 
   def grant(dcName: String, schema: String, tableName: String, role: String): Unit = {
     val dc = HiveDcs.dcCotainer.getDc(dcName);
-    val sqlStr = s"grant ALL on table $tableName to role $role;"
+    val sqlStr = s"grant ALL on table $tableName to role $role"
     println(sqlStr)
     val task = dc match {
       case dc: SimpleHiveDc =>
@@ -226,7 +226,7 @@ class HiveService {
         case "TABLE" => "TABLE"
         case _ => "table"
       }
-    } ${request.distSchema.get}.${request.distName.get} AS SELECT  ${
+    } ${request.distSchema.get}.${request.taskName.get} AS SELECT  ${
       columns.map(c => {
         ruleByColumn.get(c) match {
           case None => c

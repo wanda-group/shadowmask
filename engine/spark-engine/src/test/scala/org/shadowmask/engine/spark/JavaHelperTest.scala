@@ -15,19 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.util;
+package org.shadowmask.engine.spark
 
-public class Predictor {
+import org.apache.spark.{SparkConf, SparkContext}
+import org.junit.Test
+import org.shadowmask.engine.spark.partitioner.RolbinPartitioner
 
-  public static void predict(boolean condition, String message) {
-    if(!condition){
-      throw new RuntimeException(message);
-    }
-  }
 
-  public static void predict(boolean condition, String message ,String... values) {
-    if(!condition){
-      throw new RuntimeException(String.format(message,values));
-    }
+class JavaHelperTest {
+  @Test
+  def testRepartition(): Unit ={
+    val conf = new SparkConf().setAppName("shadowmask").setMaster("local")
+    val sc = new SparkContext(conf)
+    val rdd = sc.parallelize(1 to 100)
+
+    JavaHelper.rddRepartition(sc,rdd,2,SparkUtil.executorNames(sc)(0))(new RolbinPartitioner(2))
   }
 }

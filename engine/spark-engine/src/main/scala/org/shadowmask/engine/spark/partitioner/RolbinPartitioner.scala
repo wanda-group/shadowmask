@@ -15,19 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.util;
+package org.shadowmask.engine.spark.partitioner
 
-public class Predictor {
+import org.apache.spark.Partitioner
 
-  public static void predict(boolean condition, String message) {
-    if(!condition){
-      throw new RuntimeException(message);
-    }
-  }
 
-  public static void predict(boolean condition, String message ,String... values) {
-    if(!condition){
-      throw new RuntimeException(String.format(message,values));
-    }
+class RolbinPartitioner(val partitions: Int) extends Partitioner {
+  var index = -1;
+
+  override def numPartitions: Int = partitions
+
+  override def getPartition(key: Any): Int = {
+    index += 1
+    index %= partitions
+    index
   }
 }

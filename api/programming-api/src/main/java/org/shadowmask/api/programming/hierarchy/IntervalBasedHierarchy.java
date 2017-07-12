@@ -18,9 +18,9 @@
 package org.shadowmask.api.programming.hierarchy;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import org.shadowmask.core.data.DataType;
 import org.shadowmask.core.util.JsonUtil;
 import org.shadowmask.core.util.Predictor;
 
@@ -29,8 +29,7 @@ import org.shadowmask.core.util.Predictor;
  *
  * @param <T> : data type
  */
-public class IntervalBasedHierarchy<T extends Comparable<T>>
-    extends Hierarchy {
+public class IntervalBasedHierarchy<T extends Comparable<T>> extends Hierarchy {
 
   public List<IntervalNode> intervals = new LinkedList<>();
 
@@ -39,17 +38,6 @@ public class IntervalBasedHierarchy<T extends Comparable<T>>
   private int currentLevel = 0;
 
   private IntervalNode root;
-
-  private DataType dataType;
-
-  public IntervalBasedHierarchy setDataType(DataType dataType) {
-    this.dataType = dataType;
-    return this;
-  }
-
-  @Override public DataType dataType() {
-    return this.dataType;
-  }
 
   @Override public String hierarchyJson() {
     check();
@@ -107,6 +95,7 @@ public class IntervalBasedHierarchy<T extends Comparable<T>>
   }
 
   public IntervalBasedHierarchy clearGroups() {
+    currentLevel = 0;
     this.groups.clear();
     return this;
   }
@@ -117,12 +106,171 @@ public class IntervalBasedHierarchy<T extends Comparable<T>>
     return this;
   }
 
+  /**
+   * add a bottom interval
+   *
+   * @param lBound
+   * @param hBound
+   * @param name
+   * @return
+   */
   public IntervalBasedHierarchy addInterval(T lBound, T hBound, String name) {
     IntervalNode node = new IntervalNode();
     node.lBound = lBound;
     node.hBound = hBound;
     node.text = name;
     intervals.add(node);
+    return this;
+  }
+
+  /**
+   * import intervals form sorted intervals
+   *
+   * @param iterator     iterator of sorted intervals
+   * @param intervalSize how many values every interval will includes
+   * @return
+   */
+  public IntervalBasedHierarchy importIntervals(Iterator<T> iterator,
+      int intervalSize) {
+    Predictor.predict(intervalSize > 0,
+        "interval size should not little than 1 ,got %s", intervalSize + "");
+    if (!iterator.hasNext()) {
+      return this;
+    }
+    int cSize = 1;
+    T lBound = iterator.next();
+    T hBould = lBound;
+    while (iterator.hasNext()) {
+      if (cSize == intervalSize) {
+        cSize = 0;
+        this.addInterval(lBound, hBould, lBound.compareTo(hBould) == 0
+            ? lBound.toString()
+            : lBound.toString() + "~" + hBould.toString());
+        lBound = hBould;
+      }
+      ++cSize;
+      hBould = iterator.next();
+    }
+    this.addInterval(lBound, hBould, lBound.compareTo(hBould) == 0
+        ? lBound.toString()
+        : lBound.toString() + "~" + hBould.toString());
+    return this;
+  }
+
+  /**
+   * import intervals form sorted interval list
+   *
+   * @param list
+   * @param intervalSize
+   * @return
+   */
+  public IntervalBasedHierarchy importIntervals(List<T> list,
+      int intervalSize) {
+    if (list == null || list.size() == 0) {
+      return this;
+    }
+    return this.importIntervals(list.iterator(), intervalSize);
+  }
+
+  /**
+   * import intervals form sorted interval array
+   *
+   * @param array
+   * @param intervalSize
+   * @return
+   */
+  public IntervalBasedHierarchy importIntervals(final T[] array,
+      int intervalSize) {
+    if (array == null || array.length == 0) {
+      return this;
+    }
+    return this.importIntervals(new Iterator<T>() {
+      int i = 0;
+
+      @Override public boolean hasNext() {
+        return i < array.length;
+      }
+
+      @Override public T next() {
+        return array[i++];
+      }
+
+      @Override public void remove() {
+        // do notiong
+      }
+    }, intervalSize);
+  }
+
+  /**
+   * import intervals form sorted interval array
+   *
+   * @param intervalSize
+   * @param array
+   * @return
+   */
+  public IntervalBasedHierarchy importIntervals(int intervalSize, T... array) {
+    if (array == null || array.length == 0) {
+      return this;
+    }
+    return this.importIntervals(array, intervalSize);
+  }
+
+  /**
+   * set up level group with fixed merge width , before this must setup intervals
+   *
+   * @param width
+   * @return
+   */
+  public IntervalBasedHierarchy setUpGroupWithFixWidth(int width) {
+    int downSize = this.intervals.size();
+    int level = 0;
+    List<IntervalNode> downList = this.intervals;
+    while (downSize > width) {
+      List<IntervalNode> tmpList = new ArrayList<>();
+      int size = downSize / width;
+      int left = downSize % width;
+      IntervalNode lNode = null;
+      IntervalNode hNode = null;
+      int i;
+      for (i = 0; i < size; i++) {
+        lNode = downList.get(i * width);
+        hNode = downList.get((i + 1) * width - 1);
+        level(level).addGroup(width, lNode.lBound.compareTo(hNode.hBound) == 0
+            ? lNode.lBound.toString()
+            : lNode.lBound.toString() + "~" + hNode.hBound.toString());
+        tmpList.add(new IntervalNode(lNode.lBound, hNode.hBound));
+      }
+      if (left != 0) {
+        lNode = downList.get(i * width);
+        hNode = downList.get(downSize - 1);
+        level(level).addGroup(left, lNode.lBound.compareTo(hNode.hBound) == 0
+            ? lNode.lBound.toString()
+            : lNode.lBound.toString() + "~" + hNode.hBound.toString());
+        tmpList.add(new IntervalNode(lNode.lBound, hNode.hBound));
+      }
+
+      downSize = tmpList.size();
+      downList = tmpList;
+      ++level;
+    }
+    return this;
+  }
+
+  /**
+   * set up level group with fixed height , before this must setup intervals
+   *
+   * @param height
+   * @return
+   */
+  public IntervalBasedHierarchy setUpGroupWithFixHeight(int height) {
+    Predictor
+        .predict(height >= 1, "height must bigger than 1, got %s", height + "");
+    int width;
+    if (height == 1) {
+      width = this.intervals.size();
+    }
+    width = (int) (Math.log(this.intervals.size()) / Math.log(height) + 1);
+    this.setUpGroupWithFixWidth(width);
     return this;
   }
 
@@ -191,6 +339,15 @@ public class IntervalBasedHierarchy<T extends Comparable<T>>
     public T lBound;
     public T hBound;
     public List<IntervalNode> children;
+
+    public IntervalNode() {
+
+    }
+
+    public IntervalNode(T lBound, T hBound) {
+      this.lBound = lBound;
+      this.hBound = hBound;
+    }
   }
 
   private class LevelNode {

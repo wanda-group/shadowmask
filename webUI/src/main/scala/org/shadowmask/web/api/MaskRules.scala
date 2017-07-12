@@ -33,6 +33,8 @@ object MaskRules {
   val commonFuncMap = Map(
     "Email" ->("sk_email", "org.shadowmask.engine.hive.udf.UDFEmail"
       , List(("hierarchyLevel", "int"))),
+    "Age" ->("sk_email", "org.shadowmask.engine.hive.udf.UDFAge"
+      , List(("level", "int"),("unit", "int"))),
     "IP" ->("sk_ip", "org.shadowmask.engine.hive.udf.UDFEmail"
       , List(("hierarchyLevel", "int"))),
     "Phone" ->("sk_phone", "org.shadowmask.engine.hive.udf.UDFPhone"
@@ -45,7 +47,7 @@ object MaskRules {
     "Generalizer" ->("sk_generalizer", "org.shadowmask.engine.hive.udf.UDFGeneralization"
       , List(("hierarchyLevel", "int"), ("interval", "int"))),
     "Mask" ->("sk_mask", "org.shadowmask.engine.hive.udf.UDFMask"
-      , List(("hierarchyLevel", "int"), ("interval", "int"))),
+      , List(("hierarchyLevel", "int"), ("tag", "string"))),
     "Mapping" ->("sk_mapping", "org.shadowmask.engine.hive.udf.UDFUIdentifier", Nil)
   )
 
@@ -68,7 +70,7 @@ object MaskRules {
 
   val rules = List(
     MaskType("1", "ID", "标示符", commonRule),
-    MaskType("2", "HALF_ID", "半标示符", commonRule),
+    MaskType("2", "QUSI_ID", "半标示符", commonRule),
     MaskType("3", "SENSITIVE", "敏感数据", Nil),
     MaskType("4", "NONE_SENSITIVE", "非敏感数据", Nil)
   )

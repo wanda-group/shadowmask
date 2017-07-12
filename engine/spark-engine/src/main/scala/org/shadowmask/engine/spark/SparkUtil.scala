@@ -15,19 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.util;
 
-public class Predictor {
+package org.shadowmask.engine.spark
 
-  public static void predict(boolean condition, String message) {
-    if(!condition){
-      throw new RuntimeException(message);
-    }
-  }
+import java.net.InetAddress
 
-  public static void predict(boolean condition, String message ,String... values) {
-    if(!condition){
-      throw new RuntimeException(String.format(message,values));
-    }
+import org.apache.spark.SparkContext
+
+
+object SparkUtil {
+
+  def executorNames(sc: SparkContext): Array[String] = {
+    val localhost = InetAddress.getLocalHost
+    val ip = localhost.getHostAddress
+    val name = localhost.getHostName
+    sc.getExecutorMemoryStatus.map(_._1).map(_.split(':')(0)).filter(
+      s => {
+        s != ip
+      }
+    ).toArray
   }
 }

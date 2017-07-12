@@ -18,11 +18,26 @@
 package org.shadowmask.engine.spark
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.{Partitioner, SparkContext}
+import org.shadowmask.engine.spark.partitioner.RolbinPartitioner
+
 
 
 object JavaHelper {
 
+
   // rdd repartition
   def rddRepartition[T](rdd: RDD[T], partitions: Int): RDD[T] = rdd.repartition(partitions)
+
+  def rddRepartition[T](sc: SparkContext, rdd: RDD[T], partitions: Int, preferLocation: String)(p: Partitioner = new RolbinPartitioner(partitions)): RDD[String] = {
+    var partitionList = new Array[List[T]](partitions);
+    (0 until partitions).foreach(i => partitionList(i) = List[T]())
+    rdd.collect().foreach(item => {
+      val index = p.getPartition(item)
+      partitionList = partitionList.updated(index, item :: partitionList(index))
+    })
+    val newRdd  = sc.makeRDD(partitionList.map((_, Seq(preferLocation)))).flatMap(s => s.map(_.toString))
+    newRdd
+  }
 
 }

@@ -32,7 +32,7 @@ import java.util.UUID;
 /**
  *
  */
-public class MaskTask extends Task {
+public class MaskTask extends Task<Watcher> {
 
   /**
    * name of the task

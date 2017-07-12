@@ -55,7 +55,7 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
     )
 
 
-  get("/cloumnTypes", operation(dataCloumnTypesGetOperation)) {
+  get("/columnTypes", operation(dataCloumnTypesGetOperation)) {
     val authToken = request.getHeader("Authorization")
     val u = getAuth().verify(Some(Token(authToken)))
     if (u == None) {

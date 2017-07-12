@@ -26,6 +26,7 @@ import org.shadowmask.core.domain.TaxTreeFactory
 import org.shadowmask.core.domain.tree.{CategoryTaxTree, IntegerTaxTree, TaxTree, TaxTreeNode}
 import org.shadowmask.engine.spark.autosearch.pso.SparkDrivedDataAnoymizePSOSearch
 import org.shadowmask.engine.spark.autosearch.pso.SparkDrivedDataAnoymizePSOSearch.RddReplicatedSparkDrivedFitnessCalculator
+import org.shadowmask.engine.spark.autosearch.pso.SparkDrivedDataAnoymizePSOSearch.RddReplicatedSparkDrivedFitnessCalculator.ExecutorDistributeEquallyMapper
 import org.shadowmask.engine.spark.autosearch.pso.cluster.CombineClusterMkVelocityCalculator
 
 
@@ -101,7 +102,7 @@ object TestPSOOnSpark {
     val indexBrodcast = sc.broadcast(index)
 
     val searcher = new SparkDrivedDataAnoymizePSOSearch(args(6).toInt)
-    searcher.setCalculator(new RddReplicatedSparkDrivedFitnessCalculator(args(6).toInt, args(7).toInt, args(8).toInt))
+    searcher.setCalculator(new RddReplicatedSparkDrivedFitnessCalculator(args(6).toInt, args(7).toInt, args(8).toInt).withRddMapper(new ExecutorDistributeEquallyMapper(args(8).toInt,SparkUtil.executorNames(sc),sc)))
     searcher.setSc(sc)
     searcher.setPrivateTable(sourceRdd)
     searcher.setTrees(trees)
