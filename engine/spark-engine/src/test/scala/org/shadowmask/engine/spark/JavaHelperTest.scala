@@ -17,27 +17,18 @@
  */
 package org.shadowmask.engine.spark
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.{Partitioner, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext}
+import org.junit.Test
 import org.shadowmask.engine.spark.partitioner.RolbinPartitioner
 
 
+class JavaHelperTest {
+  @Test
+  def testRepartition(): Unit ={
+    val conf = new SparkConf().setAppName("shadowmask").setMaster("local")
+    val sc = new SparkContext(conf)
+    val rdd = sc.parallelize(1 to 100)
 
-object JavaHelper {
-
-
-  // rdd repartition
-  def rddRepartition[T](rdd: RDD[T], partitions: Int): RDD[T] = rdd.repartition(partitions)
-
-  def rddRepartition[T](sc: SparkContext, rdd: RDD[T], partitions: Int, preferLocation: String)(p: Partitioner = new RolbinPartitioner(partitions)): RDD[String] = {
-    var partitionList = new Array[List[T]](partitions);
-    (0 until partitions).foreach(i => partitionList(i) = List[T]())
-    rdd.collect().foreach(item => {
-      val index = p.getPartition(item)
-      partitionList = partitionList.updated(index, item :: partitionList(index))
-    })
-    val newRdd  = sc.makeRDD(partitionList.map((_, Seq(preferLocation)))).flatMap(s => s.map(_.toString))
-    newRdd
+    JavaHelper.rddRepartition(sc,rdd,2,SparkUtil.executorNames(sc)(0))(new RolbinPartitioner(2))
   }
-
 }

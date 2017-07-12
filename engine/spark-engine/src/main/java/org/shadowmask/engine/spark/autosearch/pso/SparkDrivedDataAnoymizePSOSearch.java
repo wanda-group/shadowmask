@@ -31,6 +31,7 @@ import org.shadowmask.engine.spark.FileUtil;
 import org.shadowmask.engine.spark.JavaHelper;
 import org.shadowmask.engine.spark.autosearch.pso.cluster.TaxTreeClusterMkParticleDriver;
 import org.shadowmask.engine.spark.functions.DataAnoymizeFunction;
+import org.shadowmask.engine.spark.partitioner.RolbinPartitioner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
@@ -139,7 +140,7 @@ public class SparkDrivedDataAnoymizePSOSearch
   public static class SparkDrivedFitnessCalculator
       extends MkFitnessCalculator<RDD<String>> implements Serializable {
 
-    private SparkContext sc;
+    protected SparkContext sc;
 
     private Broadcast<String> separator;
 
@@ -203,7 +204,7 @@ public class SparkDrivedDataAnoymizePSOSearch
               .anoymizeWithRecordDepth(sc, dataSet, particle, separator,
                   dataGeneralizerIndex);
 
-//      anoymizedTable.cache();
+      //      anoymizedTable.cache();
       //      Object samples = anoymizedTable.sample(false,0.01,System.currentTimeMillis()).collect();
       //      String [] sampleArr = (String[]) samples;
       //      for (String s : sampleArr) {
@@ -241,18 +242,16 @@ public class SparkDrivedDataAnoymizePSOSearch
   public static class RddReplicatedSparkDrivedFitnessCalculator
       extends SparkDrivedFitnessCalculator {
 
-    private static final Logger logger  = LoggerFactory.getLogger(RddReplicatedSparkDrivedFitnessCalculator.class);
+    private static final Logger logger = LoggerFactory
+        .getLogger(RddReplicatedSparkDrivedFitnessCalculator.class);
+    public RddMapper<String> mapper;
     /**
      * how many rdd will bee replicated
      */
     private int rddReplicateFactor;
-
     private RDD<String>[] replicatedRdds;
-
     private int[] rddMapedNums;
-
     private int currentRddReplicatdNums = 0;
-
     private int rddPartitions;
 
     private RddReplicatedSparkDrivedFitnessCalculator(int threadNums) {
@@ -279,23 +278,26 @@ public class SparkDrivedDataAnoymizePSOSearch
 
         return super.calculateOne(particle, mapedRddPair.getValue0());
       } finally {
-        if(mapedRddPair !=null){
+        if (mapedRddPair != null) {
           releaseRdd(mapedRddPair.getValue1());
         }
       }
 
     }
 
+    public RddReplicatedSparkDrivedFitnessCalculator withRddMapper(
+        RddMapper<String> rddMapper) {
+      this.mapper = rddMapper;
+      return this;
+    }
+
     public synchronized Pair<RDD<String>, Integer> mapToNewDataSet(
         RDD<String> originDataSet) {
       if (currentRddReplicatdNums < rddReplicateFactor) {
-        RDD<String> newRDD =
-            JavaHelper.rddRepartition(originDataSet, this.rddPartitions)
-                // catch for frequency usage
-                .cache();
+        RDD<String> newRDD = mapper.map(originDataSet).cache();
         replicatedRdds[currentRddReplicatdNums] = newRDD;
         rddMapedNums[currentRddReplicatdNums] = 1;
-        logger.info("fetch rdd at index(new one) : "+ currentRddReplicatdNums);
+        logger.info("fetch rdd at index(new one) : " + currentRddReplicatdNums);
         ++currentRddReplicatdNums;
         return new Pair<>(newRDD, currentRddReplicatdNums - 1);
       } else {
@@ -308,14 +310,59 @@ public class SparkDrivedDataAnoymizePSOSearch
           }
         }
         rddMapedNums[index]++;
-        logger.info("fetch rdd at index(cached) : "+ index);
+        logger.info("fetch rdd at index(cached) : " + index);
         return new Pair<>(replicatedRdds[index], index);
       }
     }
 
     public void releaseRdd(Integer index) {
-      logger.info("release rdd at index : "+ index);
+      logger.info("release rdd at index : " + index);
       rddMapedNums[index]--;
     }
+
+    public static interface RddMapper<T> {
+      RDD<T> map(RDD<T> oldRdd);
+    }
+
+    public static class RepartitionMapper<T> implements RddMapper<T> {
+      public int partitionNum;
+
+      public RepartitionMapper(int partitionNum) {
+        this.partitionNum = partitionNum;
+      }
+
+      @Override public RDD<T> map(RDD<T> oldRdd) {
+        return JavaHelper.rddRepartition(oldRdd, this.partitionNum);
+      }
+    }
+
+    public static class ExecutorDistributeEquallyMapper
+        implements RddMapper<String> {
+
+      public int partitions;
+
+      public String[] locations;
+
+      public int currentLocation = 0;
+      public SparkContext sc;
+
+      public ExecutorDistributeEquallyMapper(int partitions, String[] locations,
+          SparkContext sc) {
+        this.partitions = partitions;
+        this.locations = locations;
+        this.sc = sc;
+      }
+
+      @Override public RDD<String> map(RDD<String> oldRdd) {
+        RolbinPartitioner rolbinPartitioner = new RolbinPartitioner(partitions);
+        RDD<String> rdd = JavaHelper
+            .rddRepartition(sc, oldRdd, partitions, locations[currentLocation],
+                rolbinPartitioner);
+        currentLocation++;
+        currentLocation %= locations.length;
+        return rdd;
+      }
+    }
+
   }
 }

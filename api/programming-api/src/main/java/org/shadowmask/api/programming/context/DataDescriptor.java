@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.core.data;
+package org.shadowmask.api.programming.context;
 
 import static org.shadowmask.core.data.AttributeType.IDENTIFIER;
 
@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.shadowmask.core.data.AttributeType;
+import org.shadowmask.core.data.DataType;
 import org.shadowmask.core.util.Predictor;
 
 /**

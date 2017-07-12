@@ -18,8 +18,8 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <scala.tools.version>2.11</scala.tools.version>
-    <scala.version>2.11.7</scala.version>
+    <scala.tools.version>2.10</scala.tools.version>
+    <scala.version>2.10.5</scala.version>
     <guava.version>19.0</guava.version>
     <airlift.version>0.130</airlift.version>
     <json.version>2.7.4</json.version>
